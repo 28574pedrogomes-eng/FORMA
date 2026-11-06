@@ -1,0 +1,15 @@
+import { chromium } from '@playwright/test';
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1440, height: 1050 } });
+const errors = [];
+page.on('pageerror', error => errors.push(error.message));
+await page.goto('http://127.0.0.1:8081');
+await page.locator('.product-card').first().waitFor({ state: 'attached' });
+await page.locator('.product-card').first().scrollIntoViewIfNeeded();
+await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+await page.evaluate(() => document.fonts.ready);
+await page.screenshot({ path: 'storage/desktop.png', fullPage: true, animations: 'disabled' });
+await page.setViewportSize({ width: 390, height: 844 });
+await page.screenshot({ path: 'storage/mobile.png', fullPage: true, animations: 'disabled' });
+console.log(JSON.stringify({ errors, products: await page.locator('.product-card').count(), overflow: await page.evaluate(() => document.documentElement.scrollWidth > innerWidth) }));
+await browser.close();

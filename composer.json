@@ -1,0 +1,14 @@
+{
+  "name": "forma/shop",
+  "description": "Loja FORMA: autenticação Google em PHP",
+  "type": "project",
+  "license": "proprietary",
+  "require": {
+    "php": "^8.2",
+    "google/apiclient": "^2.0"
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": false
+  }
+}

@@ -1,0 +1,353 @@
+- generic [ref=e2]:
+  - link "Saltar para o conteúdo" [ref=e3] [cursor=pointer]:
+    - /url: "#main"
+  - generic [ref=e4]:
+    - generic [ref=e5]: Objetos com intenção. Uma casa mais tua.
+    - generic [ref=e6]: Portes grátis em encomendas a partir de 75 €
+  - banner [ref=e9]:
+    - generic [ref=e10]:
+      - link "FORMA, início" [ref=e11] [cursor=pointer]:
+        - /url: "#"
+        - text: forma
+        - generic [ref=e12]: ®
+      - navigation "Navegação principal" [ref=e13]:
+        - link "Coleção" [ref=e14] [cursor=pointer]:
+          - /url: "#collection"
+        - link "Conjuntos" [ref=e16] [cursor=pointer]:
+          - /url: "#bundles"
+        - link "A nossa essência" [ref=e17] [cursor=pointer]:
+          - /url: "#philosophy"
+        - link "Notícias" [ref=e18] [cursor=pointer]:
+          - /url: "#news"
+        - link "Administração" [ref=e89] [cursor=pointer]:
+          - /url: "#admin"
+      - generic [ref=e19]:
+        - button "Pesquisar" [ref=e20] [cursor=pointer]
+        - link "Favoritos" [ref=e24] [cursor=pointer]:
+          - /url: "#favorites"
+        - button "A minha conta" [ref=e90] [cursor=pointer]
+        - button "Notificações" [ref=e91] [cursor=pointer]
+        - button "Carrinho, 0 artigos" [ref=e32] [cursor=pointer]:
+          - generic [ref=e36]: Carrinho
+          - generic [ref=e37]: "0"
+  - main [ref=e508]:
+    - generic [ref=e572]:
+      - region "Um passeio pela casa FORMA":
+        - generic:
+          - generic:
+            - generic: FORMA UM LUGAR PARA VIVER
+            - button: Saltar introdução
+          - generic [aria-hidden]:
+            - generic: A ARTE DE HABITAR
+            - heading [level=1]:
+              - text: Há espaços. E há
+              - emphasis: casa.
+            - paragraph: Uma luz que abraça. Uma peça que fica. O teu lugar começa nos detalhes.
+            - button: Entra. Sente-te em casa.
+          - generic [aria-hidden]:
+            - generic: COM TEMPO. COM INTENÇÃO.
+            - paragraph:
+              - text: A próxima história
+              - emphasis: é tua.
+          - generic:
+            - generic:
+              - generic: 03 / 03
+              - paragraph: Agora, dá-lhe a tua forma.
+            - generic [aria-hidden]:
+              - generic: 100%
+            - button
+            - generic: DESLIZA PARA EXPLORAR
+      - generic [ref=e605]:
+        - region "Vantagens da FORMA" [ref=e606]:
+          - generic [ref=e607]: Portes grátis a partir de 75 €
+          - generic [ref=e614]: Materiais naturais. Escolhas conscientes.
+          - generic [ref=e619]: Design intemporal para o dia a dia
+        - generic [ref=e623]:
+          - generic [ref=e624]:
+            - generic [ref=e625]:
+              - text: ESCOLHIDOS PARA A TUA CASA
+              - heading [level=2] [ref=e626]:
+                - text: Pequenos detalhes.
+                - emphasis [ref=e627]: Grandes diferenças.
+            - generic [ref=e628]: Boa forma. Boa função.Uma casa mais tua.
+          - generic [ref=e629]:
+            - group "Categorias" [ref=e630]:
+              - button "Todos os produtos" [ref=e631] [cursor=pointer]
+              - button "Mobiliário" [ref=e697] [cursor=pointer]
+              - button "Iluminação" [ref=e698] [cursor=pointer]
+              - button "Decoração" [ref=e699] [cursor=pointer]
+              - button "Têxteis" [ref=e700] [cursor=pointer]
+            - button "Filtros" [ref=e632] [cursor=pointer]
+          - generic [ref=e634]:
+            - combobox "Pesquisar produtos" [ref=e640]
+            - generic [ref=e641]:
+              - generic [ref=e642]: 20 peças
+              - generic [ref=e643]:
+                - generic [ref=e644]: Ordenar produtos
+                - combobox "Ordenar produtos" [ref=e645] [cursor=pointer]:
+                  - option "Em destaque" [selected]
+                  - option "Mais recentes"
+                  - 'option "Preço: menor primeiro"'
+                  - 'option "Preço: maior primeiro"'
+          - generic [ref=e701]:
+            - article [ref=e702]:
+              - generic [ref=e703]:
+                - button "Ver Cadeira Arco" [ref=e704] [cursor=pointer]:
+                  - img "Cadeira Arco" [ref=e705]
+                - generic: Mais vendido
+                - button "Guardar Cadeira Arco nos favoritos" [ref=e706] [cursor=pointer]
+                - button "Adicionar ao carrinho" [ref=e709] [cursor=pointer]
+              - generic [ref=e711]:
+                - generic [ref=e712]: Mobiliário
+                - generic [ref=e713]: Carvalho natural
+              - generic [ref=e714]:
+                - button [ref=e715] [cursor=pointer]:
+                  - heading "Cadeira Arco" [level=3] [ref=e716]
+                - generic [ref=e717]: 129,00 €
+              - generic "Disponibilidade" [ref=e718]: Em stock
+              - button "Comparar" [ref=e721] [cursor=pointer]
+            - article [ref=e729]:
+              - generic [ref=e730]:
+                - button "Ver Candeeiro Aura" [ref=e731] [cursor=pointer]:
+                  - img "Candeeiro Aura" [ref=e732]
+                - generic: Novidade
+                - button "Guardar Candeeiro Aura nos favoritos" [ref=e733] [cursor=pointer]
+                - button "Adicionar ao carrinho" [ref=e736] [cursor=pointer]
+              - generic [ref=e738]:
+                - generic [ref=e739]: Iluminação
+                - generic [ref=e740]: Metal lacado
+              - generic [ref=e741]:
+                - button [ref=e742] [cursor=pointer]:
+                  - heading "Candeeiro Aura" [level=3] [ref=e743]
+                - generic [ref=e744]: 69,00 €
+              - generic "Disponibilidade" [ref=e745]: Em stock
+              - button "Comparar" [ref=e748] [cursor=pointer]
+            - article [ref=e756]:
+              - generic [ref=e757]:
+                - button "Ver Jarra Terra" [ref=e758] [cursor=pointer]:
+                  - img "Jarra Terra" [ref=e759]
+                - button "Guardar Jarra Terra nos favoritos" [ref=e760] [cursor=pointer]
+                - button "Adicionar ao carrinho" [ref=e763] [cursor=pointer]
+              - generic [ref=e765]:
+                - generic [ref=e766]: Decoração
+                - generic [ref=e767]: Acabamento dourado
+              - generic [ref=e768]:
+                - button [ref=e769] [cursor=pointer]:
+                  - heading "Jarra Terra" [level=3] [ref=e770]
+                - generic [ref=e771]: 34,00 €
+              - generic "Disponibilidade" [ref=e772]: Em stock
+              - button "Comparar" [ref=e775] [cursor=pointer]
+            - article [ref=e783]:
+              - generic [ref=e784]:
+                - button "Ver Mesa lateral Noma" [ref=e785] [cursor=pointer]:
+                  - img "Mesa lateral Noma" [ref=e786]
+                - generic: Escolha FORMA
+                - button "Guardar Mesa lateral Noma nos favoritos" [ref=e787] [cursor=pointer]
+                - button "Adicionar ao carrinho" [ref=e790] [cursor=pointer]
+              - generic [ref=e792]:
+                - generic [ref=e793]: Mobiliário
+                - generic [ref=e794]: Madeira pintada
+              - generic [ref=e795]:
+                - button [ref=e796] [cursor=pointer]:
+                  - heading "Mesa lateral Noma" [level=3] [ref=e797]
+                - generic [ref=e798]: 89,00 €
+              - generic "Disponibilidade" [ref=e799]: Em stock
+              - button "Comparar" [ref=e802] [cursor=pointer]
+            - article [ref=e810]:
+              - generic [ref=e811]:
+                - button "Ver Almofada Linho" [ref=e812] [cursor=pointer]:
+                  - img "Almofada Linho" [ref=e813]
+                - button "Guardar Almofada Linho nos favoritos" [ref=e814] [cursor=pointer]
+                - button "Adicionar ao carrinho" [ref=e817] [cursor=pointer]
+              - generic [ref=e819]:
+                - generic [ref=e820]: Têxteis
+                - generic [ref=e821]: Linho e algodão
+              - generic [ref=e822]:
+                - button [ref=e823] [cursor=pointer]:
+                  - heading "Almofada Linho" [level=3] [ref=e824]
+                - generic [ref=e825]: 29,00 €
+              - generic "Disponibilidade" [ref=e826]: Em stock
+              - button "Comparar" [ref=e829] [cursor=pointer]
+            - article [ref=e837]:
+              - generic [ref=e838]:
+                - button "Ver Vaso Botânico" [ref=e839] [cursor=pointer]:
+                  - img "Vaso Botânico" [ref=e840]
+                - generic: Novidade
+                - button "Guardar Vaso Botânico nos favoritos" [ref=e841] [cursor=pointer]
+                - button "Adicionar ao carrinho" [ref=e844] [cursor=pointer]
+              - generic [ref=e846]:
+                - generic [ref=e847]: Decoração
+                - generic [ref=e848]: Cerâmica esmaltada
+              - generic [ref=e849]:
+                - button [ref=e850] [cursor=pointer]:
+                  - heading "Vaso Botânico" [level=3] [ref=e851]
+                - generic [ref=e852]: 24,00 €
+              - generic "Disponibilidade" [ref=e853]: Em stock
+              - button "Comparar" [ref=e856] [cursor=pointer]
+            - article [ref=e864]:
+              - generic [ref=e865]:
+                - button "Ver Manta Sereno" [ref=e866] [cursor=pointer]:
+                  - img "Manta Sereno" [ref=e867]
+                - button "Guardar Manta Sereno nos favoritos" [ref=e868] [cursor=pointer]
+                - button "Adicionar ao carrinho" [ref=e871] [cursor=pointer]
+              - generic [ref=e873]:
+                - generic [ref=e874]: Têxteis
+                - generic [ref=e875]: Algodão reciclado
+              - generic [ref=e876]:
+                - button [ref=e877] [cursor=pointer]:
+                  - heading "Manta Sereno" [level=3] [ref=e878]
+                - generic [ref=e879]: 49,00 €
+              - generic "Disponibilidade" [ref=e880]: Em stock
+              - button "Comparar" [ref=e883] [cursor=pointer]
+            - article [ref=e891]:
+              - generic [ref=e892]:
+                - button "Ver Candeeiro suspenso Lume" [ref=e893] [cursor=pointer]:
+                  - img "Candeeiro suspenso Lume" [ref=e894]
+                - generic: Edição essencial
+                - button "Guardar Candeeiro suspenso Lume nos favoritos" [ref=e895] [cursor=pointer]
+                - button "Adicionar ao carrinho" [ref=e898] [cursor=pointer]
+              - generic [ref=e900]:
+                - generic [ref=e901]: Iluminação
+                - generic [ref=e902]: Metal dourado
+              - generic [ref=e903]:
+                - button [ref=e904] [cursor=pointer]:
+                  - heading "Candeeiro suspenso Lume" [level=3] [ref=e905]
+                - generic [ref=e906]: 159,00 €
+              - generic "Disponibilidade" [ref=e907]: Em stock
+              - button "Comparar" [ref=e910] [cursor=pointer]
+            - article [ref=e918]:
+              - generic [ref=e919]:
+                - button "Ver Sofá Brisa" [ref=e920] [cursor=pointer]:
+                  - img "Sofá Brisa" [ref=e921]
+                - generic: Novidade
+                - button "Guardar Sofá Brisa nos favoritos" [ref=e922] [cursor=pointer]
+                - button "Adicionar ao carrinho" [ref=e925] [cursor=pointer]
+              - generic [ref=e927]:
+                - generic [ref=e928]: Mobiliário
+                - generic [ref=e929]: Tecido e madeira
+              - generic [ref=e930]:
+                - button [ref=e931] [cursor=pointer]:
+                  - heading "Sofá Brisa" [level=3] [ref=e932]
+                - generic [ref=e933]: 589,00 €
+              - generic "Disponibilidade" [ref=e934]: Em stock
+              - button "Comparar" [ref=e937] [cursor=pointer]
+            - article [ref=e945]:
+              - generic [ref=e946]:
+                - button "Ver Poltrona Trama" [ref=e947] [cursor=pointer]:
+                  - img "Poltrona Trama" [ref=e948]
+                - generic: Escolha FORMA
+                - button "Guardar Poltrona Trama nos favoritos" [ref=e949] [cursor=pointer]
+                - button "Adicionar ao carrinho" [ref=e952] [cursor=pointer]
+              - generic [ref=e954]:
+                - generic [ref=e955]: Mobiliário
+                - generic [ref=e956]: Corda e metal
+              - generic [ref=e957]:
+                - button [ref=e958] [cursor=pointer]:
+                  - heading "Poltrona Trama" [level=3] [ref=e959]
+                - generic [ref=e960]: 149,00 €
+              - generic "Disponibilidade" [ref=e961]: Em stock
+              - button "Comparar" [ref=e964] [cursor=pointer]
+            - article [ref=e972]:
+              - generic [ref=e973]:
+                - button "Ver Mesa de centro Elo" [ref=e974] [cursor=pointer]:
+                  - img "Mesa de centro Elo" [ref=e975]
+                - generic: Novidade
+                - button "Guardar Mesa de centro Elo nos favoritos" [ref=e976] [cursor=pointer]
+                - button "Adicionar ao carrinho" [ref=e979] [cursor=pointer]
+              - generic [ref=e981]:
+                - generic [ref=e982]: Mobiliário
+                - generic [ref=e983]: Madeira e metal
+              - generic [ref=e984]:
+                - button [ref=e985] [cursor=pointer]:
+                  - heading "Mesa de centro Elo" [level=3] [ref=e986]
+                - generic [ref=e987]: 219,00 €
+              - generic "Disponibilidade" [ref=e988]: Em stock
+              - button "Comparar" [ref=e991] [cursor=pointer]
+            - article [ref=e999]:
+              - generic [ref=e1000]:
+                - button "Ver Candeeiro Nuvem" [ref=e1001] [cursor=pointer]:
+                  - img "Candeeiro Nuvem" [ref=e1002]
+                - generic: Novidade
+                - button "Guardar Candeeiro Nuvem nos favoritos" [ref=e1003] [cursor=pointer]
+                - button "Adicionar ao carrinho" [ref=e1006] [cursor=pointer]
+              - generic [ref=e1008]:
+                - generic [ref=e1009]: Iluminação
+                - generic [ref=e1010]: Metal lacado
+              - generic [ref=e1011]:
+                - button [ref=e1012] [cursor=pointer]:
+                  - heading "Candeeiro Nuvem" [level=3] [ref=e1013]
+                - generic [ref=e1014]: 59,00 €
+              - generic "Disponibilidade" [ref=e1015]: Em stock
+              - button "Comparar" [ref=e1018] [cursor=pointer]
+          - generic [ref=e1026]:
+            - button "Anterior" [disabled] [ref=e1027]
+            - generic [ref=e1028]: 1 / 2
+            - button "Seguinte" [ref=e1029] [cursor=pointer]
+          - generic [ref=e663]:
+            - generic [ref=e664]:
+              - heading "Peças que se completam." [level=2] [ref=e665]
+              - paragraph [ref=e666]: Descobre conjuntos para criar um espaço com mais harmonia.
+            - link "Explorar conjuntos" [ref=e667] [cursor=pointer]:
+              - /url: "#bundles"
+          - generic [ref=e670]:
+            - generic [ref=e671]: Feito para fazer parte da tua vida.
+            - generic [ref=e672]: COM INTENÇÃO, SEM EXCESSO
+    - generic [ref=e676]:
+      - generic [ref=e677]:
+        - img "Interior sereno com peças de design natural" [ref=e678]
+        - generic [ref=e679]: MAIS DO QUE OBJETOS. UM MODO DE ESTAR.
+      - generic [ref=e680]:
+        - text: A NOSSA FORMA DE VER
+        - heading [level=2] [ref=e681]:
+          - text: Uma casa não se enche.
+          - emphasis [ref=e682]: Constrói-se aos poucos.
+        - paragraph [ref=e683]: Acreditamos nas peças que ficam. Nas texturas que apetece tocar. Nos detalhes simples que transformam um espaço num lugar onde queremos estar.
+        - paragraph [ref=e684]: A FORMA é uma seleção cuidada de objetos para viver melhor — um pequeno detalhe de cada vez.
+        - button "Encontra a tua próxima peça" [ref=e685] [cursor=pointer]
+        - generic [ref=e688]: Com tempo. Com intenção. Com forma.
+    - generic [ref=e689]:
+      - generic [ref=e690]: f.
+      - text: O MELHOR LUGAR DO MUNDO
+      - heading [level=2] [ref=e691]:
+        - text: Pode ser a tua
+        - emphasis [ref=e692]: casa.
+      - paragraph [ref=e693]: Inspira-te. Escolhe com calma. Faz espaço para o que importa.
+      - button "Descobrir os essenciais" [ref=e694] [cursor=pointer]
+  - contentinfo [ref=e541]:
+    - generic [ref=e542]:
+      - generic [ref=e543]:
+        - link "forma ®" [ref=e544] [cursor=pointer]:
+          - /url: "#"
+          - text: forma
+          - generic [ref=e545]: ®
+        - paragraph [ref=e546]: Objetos com intenção.Para os espaços onde a vida acontece.
+        - text: DESIGN SIMPLES. VIDA COM MAIS FORMA.
+      - generic [ref=e547]:
+        - generic [ref=e548]: EXPLORAR
+        - link "A coleção" [ref=e549] [cursor=pointer]:
+          - /url: "#collection"
+        - link "Conjuntos para a casa" [ref=e550] [cursor=pointer]:
+          - /url: "#bundles"
+        - link "Os teus favoritos" [ref=e551] [cursor=pointer]:
+          - /url: "#favorites"
+        - link "A nossa essência" [ref=e552] [cursor=pointer]:
+          - /url: "#philosophy"
+        - link "Notícias" [ref=e553] [cursor=pointer]:
+          - /url: "#news"
+      - generic [ref=e554]:
+        - generic [ref=e555]: ESTAMOS POR AQUI
+        - button "A minha conta" [ref=e556] [cursor=pointer]
+        - button "Entregas e devoluções" [ref=e557] [cursor=pointer]
+        - button "Fala connosco" [ref=e558] [cursor=pointer]
+      - generic [ref=e559]:
+        - generic [ref=e560]: ✳
+        - paragraph [ref=e561]:
+          - text: Menos, mas
+          - emphasis [ref=e562]: com significado.
+    - generic [ref=e563]:
+      - generic [ref=e564]: © 2026 FORMA. Projeto académico de demonstração.
+      - generic [ref=e565]:
+        - button "Privacidade" [ref=e566] [cursor=pointer]
+        - generic [ref=e567]: Portugal · EUR €
+  - button "Abrir assistente de compras" [ref=e568] [cursor=pointer]:
+    - generic [ref=e571]: Ajuda a escolher

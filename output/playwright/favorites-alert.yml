@@ -1,0 +1,103 @@
+- generic [ref=e2]:
+  - link "Saltar para o conteúdo" [ref=e3] [cursor=pointer]:
+    - /url: "#main"
+  - generic [ref=e4]:
+    - generic [ref=e5]: Objetos com intenção. Uma casa mais tua.
+    - generic [ref=e6]: Portes grátis em encomendas a partir de 75 €
+  - banner [ref=e9]:
+    - generic [ref=e10]:
+      - link "FORMA, início" [ref=e11] [cursor=pointer]:
+        - /url: "#"
+        - text: forma
+        - generic [ref=e12]: ®
+      - navigation "Navegação principal" [ref=e13]:
+        - link "Coleção" [ref=e14] [cursor=pointer]:
+          - /url: "#collection"
+        - link "Conjuntos" [ref=e16] [cursor=pointer]:
+          - /url: "#bundles"
+        - link "A nossa essência" [ref=e17] [cursor=pointer]:
+          - /url: "#philosophy"
+        - link "Notícias" [ref=e18] [cursor=pointer]:
+          - /url: "#news"
+        - link "Administração" [ref=e89] [cursor=pointer]:
+          - /url: "#admin"
+      - generic [ref=e19]:
+        - button "Pesquisar" [ref=e20] [cursor=pointer]
+        - link "Favoritos" [ref=e24] [cursor=pointer]:
+          - /url: "#favorites"
+        - button "A minha conta" [ref=e90] [cursor=pointer]
+        - button "Notificações" [ref=e91] [cursor=pointer]
+        - button "Carrinho, 0 artigos" [ref=e32] [cursor=pointer]:
+          - generic [ref=e36]: Carrinho
+          - generic [ref=e37]: "0"
+  - main [ref=e508]:
+    - generic [ref=e1364]:
+      - generic [ref=e1366]:
+        - text: A TUA SELEÇÃO PESSOAL
+        - heading [level=2] [ref=e1367]:
+          - text: Os teus
+          - emphasis [ref=e1368]: favoritos.
+      - generic [ref=e1369]:
+        - text: Uma lista para partilhar
+        - paragraph [ref=e1370]: Quem tiver o link poderá ver os teus favoritos atuais. Os dados da tua conta ficam privados.
+        - generic [ref=e1371]:
+          - button "Criar novo link" [ref=e1372] [cursor=pointer]
+          - button "Desativar partilha" [ref=e1379] [cursor=pointer]
+      - generic [ref=e1383]:
+        - text: As peças de que gostas, ao preço certo.
+        - paragraph [ref=e1384]: Ativa o sino em cada favorito para receberes uma notificação quando atingir um novo preço mínimo. Remover o favorito também desativa o alerta.
+      - article [ref=e1403]:
+        - generic [ref=e1404]:
+          - button "Ver Cadeira Arco" [ref=e1405] [cursor=pointer]:
+            - img "Cadeira Arco" [ref=e1406]
+          - generic: Mais vendido
+          - button "Remover Cadeira Arco dos favoritos" [pressed] [ref=e1407] [cursor=pointer]
+          - button "Adicionar ao carrinho" [ref=e1410] [cursor=pointer]
+        - generic [ref=e1412]:
+          - generic [ref=e1413]: Mobiliário
+          - generic [ref=e1414]: Carvalho natural
+        - generic [ref=e1415]:
+          - button [ref=e1416] [cursor=pointer]:
+            - heading "Cadeira Arco" [level=3] [ref=e1417]
+          - generic [ref=e1418]: 129,00 €
+        - generic "Disponibilidade" [ref=e1419]: Em stock
+        - button "Comparar" [ref=e1422] [cursor=pointer]
+        - button "Ativar alerta de preço de Cadeira Arco" [ref=e1430] [cursor=pointer]: Avisar se o preço baixar
+  - contentinfo [ref=e541]:
+    - generic [ref=e542]:
+      - generic [ref=e543]:
+        - link "forma ®" [ref=e544] [cursor=pointer]:
+          - /url: "#"
+          - text: forma
+          - generic [ref=e545]: ®
+        - paragraph [ref=e546]: Objetos com intenção.Para os espaços onde a vida acontece.
+        - text: DESIGN SIMPLES. VIDA COM MAIS FORMA.
+      - generic [ref=e547]:
+        - generic [ref=e548]: EXPLORAR
+        - link "A coleção" [ref=e549] [cursor=pointer]:
+          - /url: "#collection"
+        - link "Conjuntos para a casa" [ref=e550] [cursor=pointer]:
+          - /url: "#bundles"
+        - link "Os teus favoritos" [ref=e551] [cursor=pointer]:
+          - /url: "#favorites"
+        - link "A nossa essência" [ref=e552] [cursor=pointer]:
+          - /url: "#philosophy"
+        - link "Notícias" [ref=e553] [cursor=pointer]:
+          - /url: "#news"
+      - generic [ref=e554]:
+        - generic [ref=e555]: ESTAMOS POR AQUI
+        - button "A minha conta" [ref=e556] [cursor=pointer]
+        - button "Entregas e devoluções" [ref=e557] [cursor=pointer]
+        - button "Fala connosco" [ref=e558] [cursor=pointer]
+      - generic [ref=e559]:
+        - generic [ref=e560]: ✳
+        - paragraph [ref=e561]:
+          - text: Menos, mas
+          - emphasis [ref=e562]: com significado.
+    - generic [ref=e563]:
+      - generic [ref=e564]: © 2026 FORMA. Projeto académico de demonstração.
+      - generic [ref=e565]:
+        - button "Privacidade" [ref=e566] [cursor=pointer]
+        - generic [ref=e567]: Portugal · EUR €
+  - button "Abrir assistente de compras" [ref=e568] [cursor=pointer]:
+    - generic [ref=e571]: Ajuda a escolher

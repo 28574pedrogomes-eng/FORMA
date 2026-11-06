@@ -1,0 +1,194 @@
+- generic [ref=f1e2]:
+  - link "Saltar para o conteúdo" [ref=f1e3] [cursor=pointer]:
+    - /url: "#main"
+  - banner [ref=f1e9]:
+    - generic [ref=f1e10]:
+      - link "FORMA, início" [ref=f1e11] [cursor=pointer]:
+        - /url: "#"
+        - text: forma
+        - generic [ref=f1e12]: ®
+      - navigation "Navegação principal" [ref=f1e13]:
+        - link "Coleção" [ref=f1e14] [cursor=pointer]:
+          - /url: "#collection"
+        - link "Conjuntos" [ref=f1e16] [cursor=pointer]:
+          - /url: "#bundles"
+        - link "A nossa essência" [ref=f1e17] [cursor=pointer]:
+          - /url: "#philosophy"
+        - link "Notícias" [ref=f1e18] [cursor=pointer]:
+          - /url: "#news"
+        - link "Administração" [ref=f1e624] [cursor=pointer]:
+          - /url: "#admin"
+      - generic [ref=f1e19]:
+        - button "Pesquisar" [ref=f1e20] [cursor=pointer]
+        - link "Favoritos" [ref=f1e24] [cursor=pointer]:
+          - /url: "#favorites"
+        - button "A minha conta" [ref=f1e625] [cursor=pointer]
+        - button "Notificações" [ref=f1e626] [cursor=pointer]
+        - button "Carrinho, 0 artigos" [ref=f1e32] [cursor=pointer]:
+          - generic [ref=f1e36]: Carrinho
+          - generic [ref=f1e37]: "0"
+  - generic [ref=f1e962]:
+    - complementary [ref=f1e963]:
+      - generic [ref=f1e964]:
+        - text: FORMA / STUDIO
+        - heading "O teu espaço de gestão." [level=2] [ref=f1e965]: O teu espaçode gestão.
+      - navigation "Administração" [ref=f1e966]:
+        - generic [ref=f1e967]:
+          - generic [ref=f1e968]: GESTÃO
+          - button "Visão geral" [ref=f1e969] [cursor=pointer]
+          - button "Encomendas" [ref=f1e978] [cursor=pointer]
+          - button "Produtos e stock" [ref=f1e983] [cursor=pointer]
+          - button "Movimentos de stock" [ref=f1e989] [cursor=pointer]
+          - button "Categorias" [ref=f1e1001] [cursor=pointer]
+        - generic [ref=f1e1008]:
+          - generic [ref=f1e1009]: CLIENTES
+          - button "Clientes" [ref=f1e1010] [cursor=pointer]
+          - button "Apoio ao cliente" [ref=f1e1017] [cursor=pointer]
+          - button "Devoluções" [ref=f1e1024] [cursor=pointer]
+          - button "Avaliações" [ref=f1e1031] [cursor=pointer]
+        - generic [ref=f1e1036]:
+          - generic [ref=f1e1037]: CONTEÚDO E CAMPANHAS
+          - button "Notícias" [ref=f1e1038] [cursor=pointer]
+          - button "Conjuntos" [ref=f1e1043] [cursor=pointer]
+          - button "Cupões" [ref=f1e1055] [cursor=pointer]
+        - generic [ref=f1e1060]:
+          - generic [ref=f1e1061]: SISTEMA
+          - button "Backups" [ref=f1e1062] [cursor=pointer]
+          - button "Integrações" [active] [ref=f1e1067] [cursor=pointer]
+          - button "Atividade" [ref=f1e1072] [cursor=pointer]
+      - link "Voltar à loja" [ref=f1e1076] [cursor=pointer]:
+        - /url: "#"
+      - generic [ref=f1e1079]:
+        - generic [ref=f1e1080]: A
+        - generic [ref=f1e1081]:
+          - generic [ref=f1e1082]: Administrador FORMA
+          - generic [ref=f1e1083]: Administrador
+    - main [ref=f1e1087]:
+      - generic [ref=f1e1088]:
+        - generic [ref=f1e1089]:
+          - text: PAINEL DE ADMINISTRAÇÃO
+          - heading "Integrações" [level=1] [ref=f1e1379]
+          - paragraph [ref=f1e1091]: Configura o Gemini ou a OpenAI, o email e consulta as operações.
+        - button "Atualizar dados" [ref=f1e1093] [cursor=pointer]
+      - generic [ref=f1e1380]:
+        - generic [ref=f1e1381]:
+          - generic [ref=f1e1383]:
+            - heading "Inteligência artificial" [level=2] [ref=f1e1384]
+            - paragraph [ref=f1e1387]: Escolhe o serviço usado pelo assistente de compras e pelo resumo de gestão.
+          - generic [ref=f1e1388]:
+            - generic [ref=f1e1389]: Fornecedor de IA
+            - combobox "Fornecedor de IA" [ref=f1e1390]:
+              - option "Google Gemini" [selected]
+              - option "OpenAI"
+          - generic [ref=f1e1391]:
+            - paragraph [ref=f1e1392]: Chave Gemini configurada.
+            - generic [ref=f1e1393]:
+              - generic [ref=f1e1394]: Chave API Gemini
+              - textbox "Chave API Gemini" [ref=f1e1395]:
+                - /placeholder: Deixa vazio para manter a chave atual
+            - generic [ref=f1e1396]:
+              - checkbox "Remover a chave Gemini guardada" [ref=f1e1397]
+              - text: Remover a chave Gemini guardada
+            - generic [ref=f1e1398]:
+              - generic [ref=f1e1399]: Modelo Gemini
+              - textbox "Modelo Gemini" [ref=f1e1400]: gemini-3.1-flash-lite
+            - paragraph [ref=f1e1401]:
+              - link "Criar ou consultar chave no Google AI Studio" [ref=f1e1402] [cursor=pointer]:
+                - /url: https://aistudio.google.com/apikey
+              - text: . A disponibilidade e os limites dependem do modelo e do teu projeto. Guarda as integrações e experimenta «Gerar resumo» na visão geral.
+          - paragraph [ref=f1e1403]: A chave guardada fica no servidor e não é devolvida ao navegador. Os pedidos à API podem ter custos na conta do fornecedor escolhido. O assistente exige início de sessão e tem limites de utilização. Deixar o campo vazio mantém a chave desse fornecedor.
+          - separator [ref=f1e1404]
+          - heading "Email SMTP" [level=2] [ref=f1e1405]
+          - generic [ref=f1e1409]:
+            - checkbox "Ativar entrega de emails reais" [ref=f1e1410]
+            - text: Ativar entrega de emails reais
+          - paragraph [ref=f1e1411]: Sem SMTP ativo, as mensagens ficam em storage/mail. Com SMTP, são enviadas as recuperações de acesso e confirmações de novas encomendas.
+          - generic [ref=f1e1412]:
+            - generic [ref=f1e1413]:
+              - generic [ref=f1e1414]: Servidor SMTP
+              - textbox "Servidor SMTP" [ref=f1e1415]:
+                - /placeholder: smtp.exemplo.pt
+            - generic [ref=f1e1416]:
+              - generic [ref=f1e1417]: Porta SMTP
+              - spinbutton "Porta SMTP" [ref=f1e1418]: "587"
+          - generic [ref=f1e1419]:
+            - generic [ref=f1e1420]: Encriptação SMTP
+            - combobox "Encriptação SMTP" [ref=f1e1421]:
+              - option "STARTTLS (habitualmente 587)" [selected]
+              - option "TLS direto (habitualmente 465)"
+          - generic [ref=f1e1422]:
+            - generic [ref=f1e1423]: Utilizador SMTP
+            - textbox "Utilizador SMTP" [ref=f1e1424]
+          - generic [ref=f1e1425]:
+            - generic [ref=f1e1426]: Palavra-passe SMTP
+            - textbox "Palavra-passe SMTP" [ref=f1e1427]:
+              - /placeholder: ""
+          - generic [ref=f1e1428]:
+            - checkbox "Remover a palavra-passe SMTP" [ref=f1e1429]
+            - text: Remover a palavra-passe SMTP
+          - generic [ref=f1e1430]:
+            - generic [ref=f1e1431]: Email do remetente
+            - textbox "Email do remetente" [ref=f1e1432]
+          - generic [ref=f1e1433]:
+            - button "Enviar email de teste" [ref=f1e1434] [cursor=pointer]
+            - button "Guardar integrações" [ref=f1e1435] [cursor=pointer]
+        - generic [ref=f1e1439]:
+          - generic [ref=f1e1440]: "Processamento: ativo"
+          - paragraph [ref=f1e1441]: "Emails: ainda sem mensagens"
+        - generic [ref=f1e1442]:
+          - generic [ref=f1e1444]:
+            - heading "Login com Google" [level=2] [ref=f1e1445]
+            - paragraph [ref=f1e1451]: Permite entrar ou criar uma conta através do Google.
+          - generic [ref=f1e1452]:
+            - text: Configuração necessária
+            - paragraph [ref=f1e1453]:
+              - text: Cria um cliente OAuth do tipo
+              - strong [ref=f1e1454]: Aplicação Web
+              - text: na
+              - link "Google Auth Platform" [ref=f1e1455] [cursor=pointer]:
+                - /url: https://console.cloud.google.com/auth/clients
+              - text: ". Regista este URI de redirecionamento, exatamente como aparece:"
+            - code [ref=f1e1456]: http://localhost:8081/auth/google/callback.php
+            - paragraph [ref=f1e1457]: Configura também o nome FORMA no ecrã de consentimento e, em modo de teste, adiciona os emails autorizados em Público-alvo.
+          - generic [ref=f1e1458]:
+            - generic [ref=f1e1459]:
+              - generic [ref=f1e1460]: Google Client ID
+              - textbox "Google Client ID" [ref=f1e1461]:
+                - /placeholder: …apps.googleusercontent.com
+            - generic [ref=f1e1462]:
+              - generic [ref=f1e1463]: Google Client Secret
+              - textbox "Google Client Secret" [ref=f1e1464]:
+                - /placeholder: Introduz o Client Secret do OAuth
+            - generic [ref=f1e1465]: Ainda não existe Client Secret guardado. Estas credenciais são diferentes da chave Gemini.
+            - generic [ref=f1e1466]:
+              - checkbox "Ativar início de sessão com Google" [ref=f1e1467]
+              - text: Ativar início de sessão com Google
+            - paragraph [ref=f1e1468]: "Biblioteca PHP via Composer: instalada"
+            - button "Guardar login Google" [ref=f1e1469] [cursor=pointer]
+        - generic [ref=f1e1470]:
+          - generic [ref=f1e1471]:
+            - generic [ref=f1e1472]:
+              - heading "Histórico das integrações" [level=2] [ref=f1e1473]
+              - paragraph [ref=f1e1474]: Até 50 registos de cada serviço. Sem perguntas, respostas, credenciais ou corpos de email.
+            - button "Atualizar histórico das integrações" [ref=f1e1475] [cursor=pointer]
+          - generic [ref=f1e1481]:
+            - generic [ref=f1e1482]: Filtrar estado
+            - combobox "Filtrar estado" [ref=f1e1483]:
+              - option "Todos os estados" [selected]
+              - option "Em fila"
+              - option "Em processamento"
+              - option "Concluído"
+              - option "Falhou"
+              - option "Enviado"
+              - option "Guardado localmente"
+          - paragraph [ref=f1e1484]: Processamento ativo · Atualizado em 04/11/2026, 22:32.
+          - generic [ref=f1e1485]:
+            - heading "IA" [level=3] [ref=f1e1486]
+            - paragraph [ref=f1e1487]: Sem registos neste filtro.
+          - generic [ref=f1e1488]:
+            - heading "Email" [level=3] [ref=f1e1489]
+            - paragraph [ref=f1e1490]: Sem registos neste filtro.
+          - paragraph [ref=f1e1491]: Se houver uma falha, corrige a configuração antes de pedir uma nova operação. A IA conserva registos por até 24 horas. Um email aceite pelo SMTP pode ainda depender da entrega do fornecedor.
+      - generic [ref=f1e1107]:
+        - generic [ref=f1e1108]: FORMA STUDIO
+        - generic [ref=f1e1109]: Dados reais da tua loja · Atualiza para consultar alterações recentes.

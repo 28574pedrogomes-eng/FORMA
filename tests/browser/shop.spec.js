@@ -1,0 +1,144 @@
+import { test, expect } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+
+test.beforeEach(async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('.product-card')).toHaveCount(12);
+});
+
+test('catálogo: pesquisa, categorias, favoritos, filtros e modal acessível', async ({ page }) => {
+  const errors = []; page.on('pageerror', error => errors.push(error.message));
+  await page.getByRole('button', { name: 'Saltar introdução', exact: true }).click();
+  await page.getByRole('button', { name: 'Seguinte', exact: true }).click();
+  await expect(page.locator('.product-card')).toHaveCount(12);
+  await page.getByRole('button', { name: 'Ver Tapete Ritmo', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Adicionar ao carrinho' }).click();
+  await page.getByRole('button', { name: 'Fechar', exact: true }).click();
+  await page.getByRole('button', { name: 'Carrinho, 1 artigos' }).click();
+  await expect(page.getByRole('dialog')).toContainText('Tapete Ritmo');
+  await expect(page.getByRole('dialog')).toContainText('79,00');
+  await page.getByRole('button', { name: 'Remover Tapete Ritmo', exact: true }).click();
+  await page.getByRole('button', { name: 'Fechar', exact: true }).click();
+  await page.getByRole('button', { name: 'Anterior', exact: true }).click();
+  await expect(page.locator('.product-card')).toHaveCount(12);
+  await page.getByRole('combobox', { name: 'Pesquisar produtos' }).fill('Arco');
+  await expect(page.locator('.product-card')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Guardar Cadeira Arco nos favoritos' }).click();
+  await page.getByRole('button', { name: 'Ver Cadeira Arco', exact: true }).click();
+  await expect(page.getByRole('dialog')).toContainText('Carvalho');
+  await page.keyboard.press('Escape'); await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('link', { name: 'Favoritos', exact: true }).click();
+  await expect(page.locator('.product-card')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Remover Cadeira Arco dos favoritos' }).click();
+  await expect(page.getByText('Guarda aquilo de que gostas.')).toBeVisible();
+  await page.getByRole('link', { name: 'FORMA, início' }).click();
+  await page.getByRole('button', { name: 'Iluminação', exact: true }).click();
+  await expect(page.locator('.product-card')).toHaveCount(12);
+  await page.getByRole('button', { name: 'Filtros', exact: true }).click();
+  await page.getByLabel('Preço máximo (€)').fill('70');
+  await expect(page.locator('.product-card')).toHaveCount(9);
+  expect(errors).toEqual([]);
+});
+
+test('primeira sessão mantém CSRF consistente mesmo com resposta atrasada', async ({ browser }) => {
+  const context = await browser.newContext();
+  const fresh = await context.newPage();
+  await fresh.route('**/api/index.php?route=%2Fsession', async route => {
+    const response = await route.fetch();
+    await new Promise(resolve => setTimeout(resolve, 350));
+    await route.fulfill({ response });
+  });
+  await fresh.goto(process.env.TEST_BASE_URL);
+  await fresh.getByRole('button', { name: 'Iniciar sessão', exact: true }).click();
+  await fresh.getByLabel('Email', { exact: true }).fill('admin@forma.pt');
+  await fresh.getByRole('textbox', { name: 'Palavra-passe', exact: true }).fill(process.env.TEST_ADMIN_PASSWORD);
+  await fresh.getByRole('button', { name: 'Entrar na minha conta' }).click();
+  await expect(fresh.getByRole('link', { name: 'Administração', exact: true })).toBeVisible();
+  await context.close();
+});
+
+test('cliente regista conta, compra, consulta encomenda e notificações', async ({ page }) => {
+  await page.getByRole('button', { name: 'Ver Jarra Terra', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Adicionar ao carrinho' }).click();
+  await page.getByRole('button', { name: 'Fechar', exact: true }).click();
+  await page.getByRole('button', { name: 'Carrinho, 1 artigos' }).click();
+  await page.getByRole('button', { name: 'Entrar para finalizar' }).click();
+  await page.getByRole('button', { name: 'Criar conta', exact: true }).click();
+  await page.getByLabel('Nome completo', { exact: true }).fill('Cliente Browser');
+  await page.getByLabel('Email', { exact: true }).fill(`forma-test-browser-${Date.now()}@example.test`);
+  await page.getByRole('textbox', { name: 'Palavra-passe', exact: true }).fill('BrowserSeguro!123');
+  await page.getByRole('button', { name: 'Criar conta', exact: true }).click();
+  await expect(page.getByRole('dialog')).toContainText('Finalizar encomenda');
+  await page.getByLabel('Morada', { exact: true }).fill('Rua de Teste, 10');
+  await page.getByLabel('Código postal').fill('1000-001');
+  await page.getByLabel('Localidade').fill('Lisboa');
+  await page.getByLabel('Telefone').fill('912345678');
+  await page.getByRole('checkbox', { name: /Compreendo que esta é uma loja de demonstração/ }).check();
+  await page.getByRole('button', { name: 'Confirmar encomenda' }).click();
+  await expect(page.getByText('A tua encomenda foi recebida.')).toBeVisible();
+  await expect(page.getByRole('dialog')).toContainText('28,90');
+  await page.getByRole('button', { name: 'Ver as minhas encomendas' }).click();
+  await expect(page.locator('.order-card')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Ver detalhes da encomenda' }).click();
+  await expect(page.locator('.order-expanded')).toContainText('Rua de Teste, 10');
+  await page.getByRole('button', { name: /^Notificações/ }).click();
+  await expect(page.getByRole('dialog')).toContainText('Encomenda recebida');
+  await page.getByRole('button', { name: 'Marcar todas como lidas' }).click();
+  await expect(page.locator('.notification-list .unread')).toHaveCount(0);
+});
+
+test('administração: dashboard, criar/editar/eliminar categoria e produto, exportar CSV', async ({ page }) => {
+  await page.getByRole('button', { name: 'Iniciar sessão', exact: true }).click();
+  await page.getByLabel('Email', { exact: true }).fill('admin@forma.pt');
+  await page.getByRole('textbox', { name: 'Palavra-passe', exact: true }).fill(process.env.TEST_ADMIN_PASSWORD);
+  await page.getByRole('button', { name: 'Entrar na minha conta' }).click();
+  await page.getByRole('link', { name: 'Administração', exact: true }).click();
+  await expect(page.locator('.stat-card')).toHaveCount(4);
+  await page.getByRole('button', { name: 'Categorias', exact: true }).click();
+  await page.getByRole('button', { name: 'Nova categoria', exact: true }).click();
+  await page.getByLabel('Nome', { exact: true }).fill('Categoria Browser');
+  await page.getByLabel('Descrição', { exact: true }).fill('Criada no navegador');
+  await page.getByRole('button', { name: 'Guardar categoria' }).click();
+  await page.getByRole('button', { name: 'Editar Categoria Browser', exact: true }).click();
+  await page.getByLabel('Nome', { exact: true }).fill('Categoria Browser editada');
+  await page.getByRole('button', { name: 'Guardar categoria' }).click();
+  await page.getByRole('button', { name: 'Eliminar Categoria Browser editada', exact: true }).click();
+  await page.getByRole('button', { name: 'Confirmar', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Categoria Browser editada', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Produtos e stock' }).click();
+  await page.getByRole('button', { name: 'Novo produto' }).click();
+  await page.getByLabel('Fotografia do produto').setInputFiles({ name: 'test.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jG1sAAAAASUVORK5CYII=', 'base64') });
+  await page.getByLabel('Nome do produto').fill('Produto Browser');
+  await page.getByLabel('Preço (€)').fill('19.90');
+  await page.getByLabel('Stock (unidades)').fill('12');
+  await page.getByRole('textbox', { name: 'Descrição', exact: true }).fill('Descrição do produto criado no navegador.');
+  await page.getByRole('button', { name: 'Guardar produto' }).click();
+  await page.getByRole('button', { name: 'Editar Produto Browser', exact: true }).click();
+  await page.getByLabel('Stock (unidades)').fill('7');
+  await page.getByRole('button', { name: 'Guardar produto' }).click();
+  await expect(page.getByRole('row').filter({ hasText: 'Produto Browser' })).toContainText('7 un.');
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Exportar CSV' }).click();
+  const download = await downloadPromise; expect(download.suggestedFilename()).toMatch(/forma-products.*\.csv/);
+  expect(readFileSync(await download.path(), 'utf8')).toContain('Produto Browser');
+  await page.getByRole('button', { name: 'Eliminar Produto Browser', exact: true }).click();
+  await page.getByRole('button', { name: 'Confirmar', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Editar Produto Browser', exact: true })).toHaveCount(0);
+});
+
+test('telemóvel: menu, carrinho persistente e ausência de transbordo', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole('button', { name: 'Abrir menu' })).toBeVisible();
+  await page.getByRole('button', { name: 'Abrir menu' }).click();
+  await page.getByRole('dialog').getByRole('link', { name: 'A coleção' }).click();
+  const card = page.locator('.product-card').filter({ has: page.getByRole('heading', { name: 'Cadeira Arco', exact: true }) });
+  await card.getByRole('button', { name: 'Adicionar ao carrinho' }).click();
+  await page.reload();
+  await page.getByRole('button', { name: 'Carrinho, 1 artigos' }).click();
+  await expect(page.getByRole('dialog')).toContainText('Cadeira Arco');
+  await page.getByRole('button', { name: 'Remover Cadeira Arco', exact: true }).click();
+  await expect(page.getByRole('dialog')).toContainText('Há espaço para algo especial.');
+  await page.getByRole('button', { name: 'Fechar', exact: true }).click();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: 'storage/verified-mobile.png', fullPage: true, animations: 'disabled' });
+});

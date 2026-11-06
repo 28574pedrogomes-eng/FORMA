@@ -1,0 +1,25 @@
+.google-signin { margin-block: 16px; }
+.auth-modal .auth-symbol { width: 48px; height: 48px; margin: 0 auto 12px; }
+.auth-modal .auth-symbol>span { font-size: 30px; }
+.auth-modal .auth-title+p { margin-bottom: 16px; }
+.auth-modal .google-signin { margin-block: 12px; }
+.auth-modal .auth-divider { margin-block: 16px; }
+.auth-modal .auth-assurance { margin-top: 18px; padding-top: 14px; }
+.google-button { display: flex; justify-content: center; align-items: center; gap: 12px; width: 100%; min-height: 44px; padding: 10px 16px; background: white; border: 1px solid var(--forma-muted); border-radius: 4px; font: 500 14px 'DM Sans',sans-serif; color: #1f1f1f; }
+.google-button:hover:not(:disabled) { background: #f2f5fa; box-shadow: 0 1px 3px #0002; }
+.google-button:disabled { opacity: .65; }
+.google-unavailable { color: var(--forma-muted); font-size: 11px; line-height: 1.6; margin-top: 8px; text-align: center; }
+.auth-divider { display: flex; align-items: center; gap: 14px; color: var(--forma-muted); font-size: 11px; margin: 20px 0; }
+.auth-divider::before,.auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--forma-surface); }
+.google-account>p,.google-account>small { font-size: 12px; line-height: 1.7; color: var(--forma-muted); }
+.google-linked { display: flex; gap: 10px; align-items: center; margin-top: 16px; color: var(--forma-accent); font-size: 13px; }
+.google-admin { border-top: 1px solid var(--forma-line); padding-top: 30px; margin-top: 30px; }
+.google-admin h2 { display: flex; align-items: center; gap: 12px; }
+.google-setup { background: var(--forma-surface-soft); padding: 20px; border-radius: 6px; margin: 18px 0; font-size: 13px; line-height: 1.8; }
+.google-setup p { margin-top: 8px; }
+.google-setup a { color: var(--forma-accent); text-decoration: underline; }
+.google-setup code { display: block; padding: 12px; background: white; border: 1px solid var(--forma-line); margin-top: 12px; overflow-wrap: anywhere; font-size: 12px; }
+.google-admin small { font-size: 12px; line-height: 1.6; color: var(--forma-muted); }
+.google-success { color: #315b38; font-size: 13px; }
+.google-result { min-height: 45vh; max-width: 700px; }
+.google-result h1 { font-size: 30px; margin-bottom: 24px; }

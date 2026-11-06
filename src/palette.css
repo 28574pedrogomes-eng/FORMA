@@ -1,0 +1,11 @@
+/* Approved palette D: Preto & Porcelana. Shared by the shop and administration. */
+:root {
+  --forma-porcelain: #fafaf7;
+  --forma-surface: #e7e6e1;
+  --forma-surface-soft: #f1f1ec;
+  --forma-accent: #30302d;
+  --forma-ink: #20201f;
+  --forma-muted: #63635d;
+  --forma-line: #d3d3cb;
+  --forma-inverse-muted: #c7c7bf;
+}

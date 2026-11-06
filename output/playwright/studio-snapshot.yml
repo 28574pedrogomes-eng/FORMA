@@ -1,0 +1,235 @@
+- generic [ref=e2]:
+  - link "Saltar para o conteúdo" [ref=e3] [cursor=pointer]:
+    - /url: "#main"
+  - banner [ref=e9]:
+    - generic [ref=e10]:
+      - link "FORMA, início" [ref=e11] [cursor=pointer]:
+        - /url: "#"
+        - text: forma
+        - generic [ref=e12]: ®
+      - navigation "Navegação principal" [ref=e13]:
+        - link "Coleção" [ref=e14] [cursor=pointer]:
+          - /url: "#collection"
+        - link "Conjuntos" [ref=e16] [cursor=pointer]:
+          - /url: "#bundles"
+        - link "A nossa essência" [ref=e17] [cursor=pointer]:
+          - /url: "#philosophy"
+        - link "Notícias" [ref=e18] [cursor=pointer]:
+          - /url: "#news"
+        - link "Administração" [ref=e89] [cursor=pointer]:
+          - /url: "#admin"
+      - generic [ref=e19]:
+        - button "Pesquisar" [ref=e20] [cursor=pointer]
+        - link "Favoritos" [ref=e24] [cursor=pointer]:
+          - /url: "#favorites"
+        - button "A minha conta" [active] [ref=e90] [cursor=pointer]
+        - button "Notificações" [ref=e91] [cursor=pointer]
+        - button "Carrinho, 0 artigos" [ref=e32] [cursor=pointer]:
+          - generic [ref=e36]: Carrinho
+          - generic [ref=e37]: "0"
+  - generic [ref=e43]:
+    - complementary [ref=e95]:
+      - generic [ref=e96]:
+        - text: FORMA / STUDIO
+        - heading "O teu espaço de gestão." [level=2] [ref=e97]: O teu espaçode gestão.
+      - navigation "Administração" [ref=e98]:
+        - generic [ref=e99]:
+          - generic [ref=e100]: GESTÃO
+          - button "Visão geral" [ref=e101] [cursor=pointer]
+          - button "Encomendas" [ref=e110] [cursor=pointer]
+          - button "Produtos e stock" [ref=e115] [cursor=pointer]
+          - button "Movimentos de stock" [ref=e121] [cursor=pointer]
+          - button "Categorias" [ref=e133] [cursor=pointer]
+        - generic [ref=e140]:
+          - generic [ref=e141]: CLIENTES
+          - button "Clientes" [ref=e142] [cursor=pointer]
+          - button "Apoio ao cliente" [ref=e149] [cursor=pointer]
+          - button "Devoluções" [ref=e156] [cursor=pointer]
+          - button "Avaliações" [ref=e163] [cursor=pointer]
+        - generic [ref=e168]:
+          - generic [ref=e169]: CONTEÚDO E CAMPANHAS
+          - button "Notícias" [ref=e170] [cursor=pointer]
+          - button "Conjuntos" [ref=e175] [cursor=pointer]
+          - button "Cupões" [ref=e187] [cursor=pointer]
+        - generic [ref=e192]:
+          - generic [ref=e193]: SISTEMA
+          - button "Backups" [ref=e194] [cursor=pointer]
+          - button "Integrações" [ref=e199] [cursor=pointer]
+          - button "Atividade" [ref=e204] [cursor=pointer]
+      - link "Voltar à loja" [ref=e208] [cursor=pointer]:
+        - /url: "#"
+      - generic [ref=e211]:
+        - generic [ref=e212]: A
+        - generic [ref=e213]:
+          - generic [ref=e214]: Administrador FORMA
+          - generic [ref=e215]: Administrador
+    - main [ref=e219]:
+      - generic [ref=e220]:
+        - generic [ref=e221]:
+          - text: PAINEL DE ADMINISTRAÇÃO
+          - heading "Visão geral" [level=1] [ref=e222]
+          - paragraph [ref=e223]: Uma perspetiva clara de tudo o que acontece na tua loja.
+        - generic [ref=e224]:
+          - button "Atualizar dados" [ref=e225] [cursor=pointer]
+          - button "Exportar CSV" [ref=e231] [cursor=pointer]
+      - generic [ref=e235]:
+        - generic [ref=e236]:
+          - generic [ref=e237]:
+            - text: Atualizado às 22:31
+            - generic [ref=e239]: 05/10 — 03/11 · dias UTC
+          - group "Período do dashboard" [ref=e240]:
+            - button "7 dias" [ref=e241] [cursor=pointer]
+            - button "30 dias" [pressed] [ref=e242] [cursor=pointer]
+            - button "90 dias" [ref=e243] [cursor=pointer]
+        - generic [ref=e244]:
+          - article [ref=e245]:
+            - generic [ref=e246]: Receita aprovada
+            - strong [ref=e252]: 0,00 €
+            - generic [ref=e253]: Sem variação vs. período anterior
+            - generic [ref=e254]: 0 encomenda(s) paga(s) · pagamentos de teste
+          - article [ref=e255]:
+            - generic [ref=e256]: Encomendas
+            - strong [ref=e262]: "0"
+            - generic [ref=e263]: Sem variação vs. período anterior
+            - generic [ref=e264]: 0 cancelada(s) neste período
+          - article [ref=e265]:
+            - generic [ref=e266]: Valor médio
+            - strong [ref=e272]: 0,00 €
+            - generic [ref=e273]: Sem variação vs. período anterior
+            - generic [ref=e274]: Por encomenda com pagamento aprovado
+          - article [ref=e275]:
+            - generic [ref=e276]: Novos clientes
+            - strong [ref=e284]: "0"
+            - generic [ref=e285]: Sem variação vs. período anterior
+            - generic [ref=e286]: 0 clientes no total
+        - generic [ref=e287]:
+          - generic [ref=e288]:
+            - generic [ref=e289]:
+              - heading "O que precisa de ti" [level=2] [ref=e290]
+              - paragraph [ref=e291]: Pendentes atuais, independentemente do período selecionado.
+            - generic [ref=e292]: OPERAÇÃO
+          - generic [ref=e293]:
+            - button "0 Para preparar" [ref=e294] [cursor=pointer]:
+              - strong [ref=e299]: "0"
+              - generic [ref=e300]: Para preparar
+            - button "0 Para enviar" [ref=e304] [cursor=pointer]:
+              - strong [ref=e315]: "0"
+              - generic [ref=e316]: Para enviar
+            - button "0 Por pagar" [ref=e320] [cursor=pointer]:
+              - strong [ref=e324]: "0"
+              - generic [ref=e325]: Por pagar
+            - button "0 Pedidos de apoio" [ref=e329] [cursor=pointer]:
+              - strong [ref=e332]: "0"
+              - generic [ref=e333]: Pedidos de apoio
+            - button "0 Devoluções abertas" [ref=e337] [cursor=pointer]:
+              - strong [ref=e343]: "0"
+              - generic [ref=e344]: Devoluções abertas
+            - button "0 Opções com stock baixo" [ref=e348] [cursor=pointer]:
+              - strong [ref=e354]: "0"
+              - generic [ref=e355]: Opções com stock baixo
+        - generic [ref=e359]:
+          - generic [ref=e360]:
+            - generic [ref=e361]:
+              - generic [ref=e362]:
+                - heading "Evolução da receita" [level=2] [ref=e363]
+                - paragraph [ref=e364]: Encomendas pagas, sem cancelamentos ou reembolsos.
+              - generic [ref=e365]: Aprovado
+            - generic [ref=e367]:
+              - text: 0,00 €
+              - generic [ref=e368]: nos últimos 30 dias
+            - generic [ref=e369]:
+              - generic [ref=e370]:
+                - generic [ref=e371]: 1,00 €
+                - generic [ref=e372]: 0,50 €
+                - generic [ref=e373]: 0 €
+              - generic [ref=e374]:
+                - img "Receita diária, 30 dias. Total 0,00 €. Consulta os valores na tabela abaixo." [ref=e375]
+                - generic [ref=e376]:
+                  - generic [ref=e377]: 05/10
+                  - generic [ref=e378]: 20/10
+                  - generic [ref=e379]: 03/11
+            - paragraph [ref=e380]: Ainda não há pagamentos aprovados neste período.
+            - button "Consultar valores diários" [ref=e381] [cursor=pointer]
+          - generic [ref=e382]:
+            - generic [ref=e384]:
+              - heading "Mais vendidos" [level=2] [ref=e385]
+              - paragraph [ref=e386]: Unidades em encomendas pagas neste período.
+            - generic [ref=e390]:
+              - heading "A tua próxima venda começa aqui." [level=3] [ref=e394]
+              - paragraph [ref=e395]: Os produtos mais vendidos aparecem depois do primeiro pagamento aprovado.
+              - button "Gerir coleção" [ref=e396] [cursor=pointer]
+            - paragraph [ref=e399]: Valores dos artigos antes de cupões e portes.
+        - generic [ref=e400]:
+          - generic [ref=e401]:
+            - generic [ref=e402]:
+              - heading "Últimas encomendas" [level=2] [ref=e403]
+              - paragraph [ref=e404]: As seis mais recentes, em todos os períodos.
+            - button "Ver todas" [ref=e405] [cursor=pointer]
+          - generic [ref=e408]:
+            - heading "Ainda não há encomendas." [level=3] [ref=e413]
+            - paragraph [ref=e414]: Os novos pedidos ficam disponíveis aqui.
+        - generic [ref=e415]:
+          - generic [ref=e416]:
+            - generic [ref=e417]:
+              - generic [ref=e418]:
+                - heading "Inventário em atenção" [level=2] [ref=e419]
+                - paragraph [ref=e420]: Opções ativas com cinco unidades ou menos.
+              - button "Gerir stock" [ref=e421] [cursor=pointer]
+            - generic [ref=e424]:
+              - heading "Stock em dia." [level=3] [ref=e428]
+              - paragraph [ref=e429]: As opções do catálogo estão acima do limite de atenção.
+          - generic [ref=e430]:
+            - generic [ref=e432]:
+              - heading "Preços que despertam interesse" [level=2] [ref=e433]
+              - paragraph [ref=e434]: Alertas ativos nos favoritos dos clientes.
+            - generic [ref=e440]:
+              - generic [ref=e441]:
+                - generic [ref=e442]: "0"
+                - text: alertas ativos
+              - generic [ref=e443]:
+                - generic [ref=e444]: "0"
+                - text: pessoas a acompanhar
+            - paragraph [ref=e445]: Quando alguém ativar um alerta nos favoritos, vais saber quais os produtos com mais interesse.
+            - paragraph [ref=e446]: Uma redução de preço gera notificações internas automaticamente.
+        - generic [ref=e447]:
+          - generic [ref=e448]:
+            - generic [ref=e449]:
+              - generic [ref=e450]:
+                - heading "Atividade recente" [level=2] [ref=e451]
+                - paragraph [ref=e452]: As últimas alterações na loja.
+              - button "Ver histórico" [ref=e453] [cursor=pointer]
+            - generic [ref=e456]:
+              - generic [ref=e459]:
+                - text: Início de sessão
+                - paragraph [ref=e460]: Autenticação com sucesso.
+                - time [ref=e461]: 03/11/2026, 22:31
+              - generic [ref=e464]:
+                - text: Integrações atualizadas
+                - paragraph [ref=e465]: Configuração de IA/SMTP alterada. Credenciais omitidas.
+                - time [ref=e466]: 03/11/2026, 22:15
+              - generic [ref=e469]:
+                - text: Integrações atualizadas
+                - paragraph [ref=e470]: Configuração de IA/SMTP alterada. Credenciais omitidas.
+                - time [ref=e471]: 03/11/2026, 22:14
+              - generic [ref=e474]:
+                - text: Integrações atualizadas
+                - paragraph [ref=e475]: Configuração de IA/SMTP alterada. Credenciais omitidas.
+                - time [ref=e476]: 03/11/2026, 22:13
+              - generic [ref=e479]:
+                - text: Início de sessão
+                - paragraph [ref=e480]: Autenticação com sucesso.
+                - time [ref=e481]: 03/11/2026, 22:07
+          - generic [ref=e482]:
+            - text: FERRAMENTAS DA LOJA
+            - heading "Mais tempo para o que importa." [level=2] [ref=e483]
+            - paragraph [ref=e484]: O catálogo tem 20 produtos ativos. Mantém os dados organizados e as integrações prontas.
+            - generic [ref=e485]: Serviço de tarefas ativo
+            - generic [ref=e487]:
+              - button "Cópias de segurança" [ref=e488] [cursor=pointer]
+              - button "Gerir integrações" [ref=e492] [cursor=pointer]
+              - button "Consultar clientes" [ref=e496] [cursor=pointer]
+            - group [ref=e500]:
+              - generic "Resumo de gestão com IA" [ref=e501] [cursor=pointer]
+      - generic [ref=e502]:
+        - generic [ref=e503]: FORMA STUDIO
+        - generic [ref=e504]: Dados reais da tua loja · Atualiza para consultar alterações recentes.

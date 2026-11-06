@@ -1,0 +1,14 @@
+FORMA - Loja online de demonstracao
+
+1. Extrai a pasta FORMA para o computador.
+2. Instala XAMPP em C:\xampp (PHP e MySQL/MariaDB).
+3. Executa iniciar.bat e abre http://localhost:8081.
+4. O instalador cria a base de dados com produtos e noticias de demonstracao.
+5. A palavra-passe inicial de admin@forma.pt sera gerada em storage/setup-credentials.txt.
+6. Para usar IA, abre Administracao > Integracoes, seleciona Google Gemini e guarda a tua chave.
+
+O frontend ja esta compilado em public/build. Para editar e recompilar: instala Node.js 22.16+, executa npm ci e npm run build.
+Consulta README.md e docs/ para os detalhes.
+
+Inclui codigo React/PHP, Tailwind, imagens, videos, SQL, instalador, testes e documentacao.
+Nao inclui chaves, credenciais, dados privados da instalacao, backups, node_modules nem ferramentas locais.

@@ -1,0 +1,939 @@
+/* ===================================================================
+   CINEMATIC TRANSITIONS & VITURE LUMA AESTHETIC — FORMA DESIGN SYSTEM
+   =================================================================== */
+
+:root {
+  --ease-cinema: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --glow-accent: rgba(48,48,45,0.32);
+  --glow-light: rgba(99,99,93,0.18);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.65);
+}
+
+/* --- Smooth Scroll & Global Refinements --- */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- Announcement Bar Cinematic Light Sweep --- */
+.announcement {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, var(--forma-accent) 0%, var(--forma-accent) 50%, var(--forma-accent) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.announcement::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(255, 255, 255, 0.25) 50%,
+    transparent 60%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: announcement-sweep 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes announcement-sweep {
+  0% { transform: translateX(-100%); }
+  25% { transform: translateX(100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* --- Floating Glass Header (Viture Luma Style) --- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid rgba(211,211,203,0.6);
+  transition: background-color 0.4s var(--ease-cinema), box-shadow 0.4s var(--ease-cinema), border-color 0.4s var(--ease-cinema);
+}
+
+.site-header.header-scrolled {
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom-color: rgba(211,211,203,0.7);
+  box-shadow: 0 16px 36px -12px rgba(32,32,31,0.09), 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.wordmark {
+  transition: transform 0.3s var(--ease-cinema), opacity 0.2s ease;
+}
+
+.wordmark:hover {
+  transform: translateY(-1px) scale(1.01);
+}
+
+.wordmark>span {
+  transition: color 0.3s ease;
+}
+
+.main-nav a {
+  position: relative;
+  padding: 8px 4px;
+  transition: color 0.25s var(--ease-cinema), transform 0.25s var(--ease-cinema);
+}
+
+.main-nav a:hover {
+  color: var(--forma-accent);
+  transform: translateY(-1px);
+}
+
+.main-nav a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--green);
+  border-radius: 9999px;
+  transform: translateX(-50%);
+  transition: width 0.3s var(--ease-cinema);
+  box-shadow: 0 0 8px rgba(48,48,45,0.4);
+}
+
+.main-nav a:hover::after,
+.main-nav a.active::after {
+  width: 16px;
+}
+
+.nav-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 10px rgba(48,48,45,0.8), 0 0 3px #ffffff;
+  animation: beacon-pulse 2.8s ease-in-out infinite;
+}
+
+@keyframes beacon-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(48,48,45,0.5), 0 0 3px #ffffff;
+  }
+  50% {
+    transform: scale(1.25);
+    box-shadow: 0 0 0 6px rgba(48,48,45,0), 0 0 8px rgba(48,48,45,0.9);
+  }
+}
+
+.header-tools .icon-btn {
+  transition: transform 0.25s var(--ease-spring), background-color 0.2s ease, box-shadow 0.25s ease;
+}
+
+.header-tools .icon-btn:hover {
+  transform: translateY(-1px) scale(1.06);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.cart-nav {
+  position: relative;
+  border-radius: 9999px;
+  padding: 6px 14px;
+  transition: transform 0.25s var(--ease-spring), background-color 0.2s ease, box-shadow 0.25s ease;
+}
+
+.cart-nav:hover {
+  background: rgba(241,241,236,0.8);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(48,48,45,0.1);
+}
+
+.cart-count {
+  box-shadow: 0 2px 8px rgba(48,48,45,0.35);
+  transition: transform 0.3s var(--ease-spring);
+}
+
+.cart-nav:hover .cart-count {
+  transform: scale(1.12);
+}
+
+/* --- Hero Cinematic Visual Engine --- */
+.hero-react {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.hero-ambient-glow {
+  position: absolute;
+  right: 5%;
+  top: 15%;
+  width: min(650px, 80vw);
+  height: min(650px, 80vw);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,99,93,0.2) 0%, rgba(48,48,45,0.05) 45%, transparent 70%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+  transform: translate3d(calc(var(--hero-x, 0px) * -0.6), calc(var(--hero-y, 0px) * -0.6), 0);
+  transition: transform 0.4s var(--ease-soft);
+  animation: ambient-breathe 8s ease-in-out infinite alternate;
+}
+
+@keyframes ambient-breathe {
+  0% { opacity: 0.7; transform: translate3d(calc(var(--hero-x, 0px) * -0.6), calc(var(--hero-y, 0px) * -0.6), 0) scale(0.96); }
+  100% { opacity: 1; transform: translate3d(calc(var(--hero-x, 0px) * -0.6), calc(var(--hero-y, 0px) * -0.6), 0) scale(1.06); }
+}
+
+.hero-scene {
+  transform-style: preserve-3d;
+  transition: opacity 1.35s var(--ease-cinema), transform 0.6s var(--ease-soft);
+}
+
+.hero-scene img {
+  transform-origin: center center;
+  transition: transform 8s cubic-bezier(0.1, 0, 0.2, 1) !important;
+}
+
+.hero-scene.is-active img {
+  animation: hero-dolly-in 10s ease-out forwards;
+}
+
+@keyframes hero-dolly-in {
+  0% { transform: scale(1.08) translate3d(var(--hero-x, 0px), var(--hero-y, 0px), 0); }
+  100% { transform: scale(1.0) translate3d(var(--hero-x, 0px), var(--hero-y, 0px), 0); }
+}
+
+.hero-scene-glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle 600px at var(--glare-x, 50%) var(--glare-y, 50%),
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.04) 40%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  mix-blend-mode: overlay;
+}
+
+.hero:hover .hero-scene-glare {
+  opacity: 1;
+}
+
+/* Eyebrow beacon */
+.eyebrow-beacon,
+.hero-eyebrow>span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--forma-muted);
+  box-shadow: 0 0 0 0 rgba(99,99,93,0.6);
+  animation: beacon-pulse 2.5s infinite;
+}
+
+/* Headline Reveal */
+.hero-line {
+  display: block;
+  overflow: hidden;
+}
+
+.hero-line>span {
+  display: block;
+  animation: cinema-text-rise 1.05s var(--ease-cinema) both;
+}
+
+.hero-line>em {
+  display: block;
+  animation: cinema-text-rise 1.1s 0.14s var(--ease-cinema) both;
+  background: linear-gradient(110deg, var(--forma-accent) 0%, var(--forma-muted) 50%, var(--forma-accent) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: cinema-text-rise 1.1s 0.14s var(--ease-cinema) both, shimmer-text 8s linear infinite;
+}
+
+@keyframes cinema-text-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(115%) rotate(1.8deg);
+    filter: blur(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+    filter: blur(0);
+  }
+}
+
+@keyframes shimmer-text {
+  to { background-position: 200% center; }
+}
+
+/* Floating Glass Product Label */
+.hero-product-label {
+  position: absolute;
+  right: 56px;
+  bottom: 94px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 20px 45px -12px rgba(32,32,31,0.14), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-radius: 14px;
+  padding: 18px 65px 18px 22px;
+  transform: translate3d(calc(var(--hero-x, 0px) * -0.5), calc(var(--hero-y, 0px) * -0.5), 0);
+  transition: transform 0.4s var(--ease-cinema), box-shadow 0.4s var(--ease-cinema);
+  overflow: hidden;
+}
+
+.hero-product-label::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.6) 45%,
+    rgba(255, 255, 255, 0.9) 50%,
+    rgba(255, 255, 255, 0.6) 55%,
+    transparent 100%
+  );
+  transform: translateX(-150%) skewX(-20deg);
+  animation: glass-shimmer 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes glass-shimmer {
+  0% { transform: translateX(-150%) skewX(-20deg); }
+  35%, 100% { transform: translateX(200%) skewX(-20deg); }
+}
+
+.hero-product-label:hover {
+  transform: translate3d(calc(var(--hero-x, 0px) * -0.5), calc(var(--hero-y, 0px) * -0.5 - 4px), 0) scale(1.02);
+  box-shadow: 0 28px 55px -12px rgba(32,32,31,0.2), 0 0 20px rgba(48,48,45,0.14);
+}
+
+.hero-product-label button {
+  transition: transform 0.3s var(--ease-spring), background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.hero-product-label:hover button {
+  transform: rotate(45deg) scale(1.08);
+  background: var(--forma-accent);
+  color: #ffffff;
+  border-color: var(--forma-accent);
+}
+
+/* Carousel Glass Pill Controls */
+.hero-carousel-controls {
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 12px 32px -8px rgba(32,32,31,0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-radius: 9999px;
+  padding: 6px 14px;
+}
+
+.hero-scene-tabs>button.active>span {
+  background: linear-gradient(90deg, var(--forma-accent) 0%, var(--forma-muted) 100%);
+  box-shadow: 0 0 10px rgba(48,48,45,0.7);
+}
+
+.hero-control {
+  transition: transform 0.25s var(--ease-spring), background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.25s ease;
+}
+
+.hero-control:hover:not(:disabled) {
+  transform: scale(1.12);
+  background: var(--forma-accent);
+  color: #ffffff;
+  border-color: var(--forma-accent);
+  box-shadow: 0 4px 14px rgba(48,48,45,0.3);
+}
+
+.hero-bottom>button,
+.hero-scroll-btn {
+  transition: transform 0.3s var(--ease-spring), background-color 0.2s ease, box-shadow 0.25s ease;
+  animation: float-gentle 3.5s ease-in-out infinite;
+}
+
+.hero-bottom>button:hover,
+.hero-scroll-btn:hover {
+  transform: translateY(3px) scale(1.1);
+  background: var(--forma-accent);
+  color: #ffffff;
+  border-color: var(--forma-accent);
+  box-shadow: 0 6px 18px rgba(48,48,45,0.25);
+}
+
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
+
+/* Primary Button Cinematic Shimmer */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(48,48,45,0.25);
+  transition: transform 0.3s var(--ease-cinema), background-color 0.3s ease, box-shadow 0.3s var(--ease-cinema);
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.25) 50%,
+    transparent 100%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+
+.btn-primary:hover:not(:disabled)::before {
+  transform: translateX(120%);
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(48,48,45,0.35);
+}
+
+.btn-secondary {
+  border-radius: 8px;
+  transition: transform 0.3s var(--ease-cinema), background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.3s var(--ease-cinema);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+}
+
+/* --- Trust Strip Cinematic Specs Cards --- */
+.trust-strip {
+  background: linear-gradient(180deg, var(--forma-surface-soft) 0%, #ffffff 100%);
+  border-bottom: 1px solid rgba(211,211,203,0.7);
+}
+
+.trust-strip>div {
+  position: relative;
+  padding: 16px 20px;
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.8s var(--ease-cinema), transform 0.8s var(--ease-cinema), color 0.3s ease;
+}
+
+.trust-strip>div:nth-child(1) { transition-delay: 0.06s; }
+.trust-strip>div:nth-child(2) { transition-delay: 0.18s; }
+.trust-strip>div:nth-child(3) { transition-delay: 0.30s; }
+
+.trust-strip>div.is-in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.trust-strip>div.is-in-view:hover {
+  transform: translateY(-3px);
+  transition-delay: 0s;
+}
+
+.trust-strip svg {
+  transition: transform 0.35s var(--ease-spring), color 0.3s ease, filter 0.35s ease;
+}
+
+.trust-strip>div:hover svg {
+  transform: scale(1.18);
+  color: var(--forma-accent);
+  filter: drop-shadow(0 0 10px rgba(48,48,45,0.4));
+}
+
+/* --- Catalog Toolbar & Category Pills --- */
+.category-tabs>button {
+  border-radius: 9999px;
+  transition: all 0.3s var(--ease-cinema);
+  font-weight: 500;
+}
+
+.category-tabs>button:hover {
+  background: rgba(241,241,236,0.9);
+  color: var(--forma-accent);
+  transform: translateY(-1px);
+}
+
+.category-tabs>button.active {
+  background: var(--green);
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(48,48,45,0.32), 0 0 8px rgba(48,48,45,0.2);
+  transform: translateY(-1px);
+}
+
+.filter-toggle {
+  border-radius: 9999px;
+  transition: all 0.25s var(--ease-cinema);
+}
+
+.filter-toggle:hover {
+  background: rgba(241,241,236,0.8);
+  transform: translateY(-1px);
+}
+
+.catalog-search {
+  position: relative;
+  border-radius: 9999px;
+  padding: 8px 16px;
+  background: rgba(250,250,247,0.8);
+  border: 1px solid rgba(211,211,203,0.6);
+  transition: all 0.3s var(--ease-cinema);
+}
+
+.catalog-search:focus-within {
+  background: #ffffff;
+  border-color: rgba(48,48,45,0.5);
+  box-shadow: 0 0 0 3px rgba(48,48,45,0.12), 0 8px 24px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+/* --- Scroll Reveal Animations (Viture Luma Fluid Scroll) --- */
+.section-intro {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.85s var(--ease-cinema), transform 0.85s var(--ease-cinema);
+}
+
+.section-intro.is-in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.catalog-toolbar,
+.catalog-search-row {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s var(--ease-cinema), transform 0.8s var(--ease-cinema);
+}
+
+.catalog-toolbar.is-in-view,
+.catalog-search-row.is-in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --- Product Cards (Viture Luma Spotlight & Staggered Scroll Reveal) --- */
+.product-card {
+  position: relative;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid rgba(211,211,203,0.7);
+  box-shadow: 0 4px 16px -4px rgba(32,32,31,0.04);
+  padding: 10px;
+  opacity: 0;
+  transform: translateY(42px) scale(0.96);
+  transition: opacity 0.85s var(--ease-cinema), transform 0.85s var(--ease-cinema), box-shadow 0.45s var(--ease-cinema), border-color 0.35s ease;
+  transition-delay: var(--delay, 0ms);
+  will-change: transform, opacity, box-shadow;
+}
+
+.product-card.is-in-view {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.product-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 17px;
+  background: radial-gradient(
+    320px circle at var(--mouse-x, 50%) var(--mouse-y, 30%),
+    rgba(48,48,45,0.14) 0%,
+    rgba(48,48,45,0.02) 60%,
+    transparent 80%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.product-card:hover::before {
+  opacity: 1;
+}
+
+.product-card.is-in-view:hover {
+  transform: translateY(-8px) scale(1.008);
+  box-shadow: 0 24px 50px -12px rgba(32,32,31,0.14), 0 0 0 1px rgba(48,48,45,0.22);
+  border-color: rgba(48,48,45,0.25);
+  transition-delay: 0s !important;
+}
+
+.product-image-wrap {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--forma-surface-soft);
+  z-index: 1;
+}
+
+.product-image-button>img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.85s var(--ease-cinema), filter 0.85s var(--ease-cinema);
+}
+
+.product-card:hover .product-image-button>img {
+  transform: scale(1.08);
+  filter: contrast(102%) brightness(101%);
+}
+
+.product-badge {
+  border-radius: 9999px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  z-index: 2;
+}
+
+.favorite-button {
+  border-radius: 50%;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s var(--ease-spring), color 0.25s ease, background-color 0.2s ease, box-shadow 0.25s ease;
+  z-index: 2;
+}
+
+.favorite-button:hover {
+  transform: scale(1.15);
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.favorite-button.is-favorite {
+  color: #a55943;
+  animation: heart-pop 0.4s var(--ease-spring);
+}
+
+@keyframes heart-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.quick-add {
+  border-radius: 10px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transition: transform 0.35s var(--ease-cinema), background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+  z-index: 3;
+}
+
+.quick-add:hover {
+  background: var(--green);
+  color: #ffffff;
+  box-shadow: 0 8px 24px rgba(48,48,45,0.35);
+  transform: translateY(0) scale(1.02);
+}
+
+.product-title-row h3 {
+  transition: color 0.25s ease;
+}
+
+.product-card:hover .product-title-row h3 {
+  color: var(--forma-accent);
+}
+
+/* --- Story / Philosophy Section Cinematic Showcase --- */
+.story-section {
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px -15px rgba(32,32,31,0.09);
+  background: linear-gradient(135deg, var(--forma-porcelain) 0%, var(--forma-surface-soft) 100%);
+  border: 1px solid rgba(211,211,203,0.6);
+  position: relative;
+  opacity: 0;
+  transform: translateY(48px) scale(0.97);
+  transition: opacity 1.05s var(--ease-cinema), transform 1.05s var(--ease-cinema), box-shadow 0.5s var(--ease-cinema);
+}
+
+.story-section.is-in-view {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.story-photo {
+  position: relative;
+  overflow: hidden;
+}
+
+.story-photo>img {
+  transition: transform 1.2s var(--ease-cinema);
+}
+
+.story-section.is-in-view:hover .story-photo>img {
+  transform: scale(1.04);
+}
+
+.story-photo>span {
+  background: rgba(32,32,31,0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  padding: 8px 18px;
+  width: max-content;
+  max-width: calc(100% - 56px);
+  text-shadow: none;
+}
+
+.story-copy h2 em {
+  background: linear-gradient(120deg, var(--forma-accent) 0%, var(--forma-muted) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.story-copy .arrow-link {
+  transition: transform 0.25s var(--ease-cinema), color 0.25s ease, border-color 0.25s ease;
+}
+
+.story-copy .arrow-link:hover {
+  transform: translateX(4px);
+  color: var(--forma-accent);
+  border-bottom-color: var(--forma-accent);
+}
+
+/* --- Closing Note / Inspiring Callout --- */
+.closing-note {
+  opacity: 0;
+  transform: translateY(38px);
+  transition: opacity 0.9s var(--ease-cinema), transform 0.9s var(--ease-cinema);
+}
+
+.closing-note.is-in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.closing-mark {
+  display: block;
+  margin: 0 auto 16px;
+  width: max-content;
+  transition: transform 0.4s var(--ease-spring), filter 0.4s ease;
+  filter: drop-shadow(0 0 16px rgba(48,48,45,0.2));
+}
+
+.closing-mark:hover {
+  transform: scale(1.15) rotate(-3deg);
+  filter: drop-shadow(0 0 24px rgba(48,48,45,0.4));
+}
+
+/* --- Global Scroll Progress Bar --- */
+.scroll-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--forma-accent) 0%, var(--forma-muted) 50%, var(--forma-inverse-muted) 100%);
+  box-shadow: 0 0 12px rgba(99,99,93,0.8), 0 0 3px #ffffff;
+  z-index: 100;
+  transition: width 0.1s linear;
+  pointer-events: none;
+}
+
+/* --- Cinematic Lightbox & Modals --- */
+.modal-backdrop {
+  background: rgba(32,32,31,0.65);
+  backdrop-filter: blur(20px) saturate(140%) brightness(0.7);
+  -webkit-backdrop-filter: blur(20px) saturate(140%) brightness(0.7);
+  animation: cinema-fade 0.3s var(--ease-cinema) both;
+}
+
+.modal {
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 32px 90px -16px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  animation: cinema-modal-in 0.4s var(--ease-cinema) both;
+}
+
+.drawer {
+  border-radius: 22px 0 0 22px;
+  box-shadow: -24px 0 80px rgba(0, 0, 0, 0.22);
+  animation: cinema-drawer-in 0.42s var(--ease-cinema) both;
+}
+
+@keyframes cinema-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes cinema-modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes cinema-drawer-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Product Detail inside Modal */
+.detail-image {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 36px -10px rgba(32,32,31,0.12);
+  transition: transform 0.4s var(--ease-cinema);
+}
+
+.detail-image img {
+  transition: transform 0.6s var(--ease-cinema);
+}
+
+.detail-image:hover img {
+  transform: scale(1.04);
+}
+
+.variant-selector button {
+  border-radius: 12px;
+  transition: all 0.25s var(--ease-cinema);
+}
+
+.variant-selector button.selected {
+  border-color: var(--forma-accent);
+  background: rgba(241,241,236,0.9);
+  box-shadow: 0 0 0 1px var(--forma-accent), 0 6px 18px rgba(48,48,45,0.15);
+}
+
+/* Related Products in Product Detail */
+.related-grid button {
+  text-align: left;
+  border-radius: 12px;
+  padding: 6px;
+  background: transparent;
+  transition: transform 0.35s var(--ease-cinema), background-color 0.25s ease;
+}
+
+.related-grid button:hover {
+  transform: translateY(-4px);
+  background: rgba(250,250,247,0.7);
+}
+
+.related-grid img {
+  border-radius: 10px;
+  transition: transform 0.6s var(--ease-cinema), box-shadow 0.4s ease;
+}
+
+.related-grid button:hover img {
+  transform: scale(1.05);
+  box-shadow: 0 10px 24px -6px rgba(32,32,31,0.16);
+}
+
+/* Shipping Progress Indicator */
+.shipping-progress {
+  border-radius: 12px;
+  border: 1px solid rgba(211,211,203,0.6);
+}
+
+.shipping-progress>div {
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.shipping-progress>div>span {
+  border-radius: 9999px;
+  box-shadow: 0 0 10px rgba(48,48,45,0.4);
+  transition: width 0.5s var(--ease-cinema);
+}
+
+/* --- Mobile Responsiveness Safety --- */
+@media (max-width: 760px) {
+  .hero-product-label {
+    display: none;
+  }
+  .hero-ambient-glow {
+    width: 280px;
+    height: 280px;
+    right: 0;
+    top: 10%;
+  }
+  .story-section {
+    border-radius: 16px;
+  }
+  .product-card {
+    border-radius: 14px;
+    padding: 7px;
+  }
+  .drawer {
+    border-radius: 0;
+  }
+  .modal {
+    border-radius: 18px;
+  }
+}
+
+/* --- Reduced Motion Strict Compatibility --- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+    transform: none !important;
+  }
+  .hero-scene.is-active img {
+    animation: none !important;
+    transform: none !important;
+  }
+  .announcement::before {
+    display: none !important;
+  }
+  .hero-ambient-glow {
+    display: none !important;
+  }
+  .product-card,
+  .trust-strip>div,
+  .section-intro,
+  .catalog-toolbar,
+  .catalog-search-row,
+  .story-section,
+  .closing-note {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}

@@ -1,0 +1,237 @@
+- generic [ref=f1e2]:
+  - link "Saltar para o conteúdo" [ref=f1e3] [cursor=pointer]:
+    - /url: "#main"
+  - banner [ref=f1e9]:
+    - generic [ref=f1e10]:
+      - link "FORMA, início" [ref=f1e11] [cursor=pointer]:
+        - /url: "#"
+        - text: forma
+        - generic [ref=f1e12]: ®
+      - navigation "Navegação principal" [ref=f1e13]:
+        - link "Coleção" [ref=f1e14] [cursor=pointer]:
+          - /url: "#collection"
+        - link "Conjuntos" [ref=f1e16] [cursor=pointer]:
+          - /url: "#bundles"
+        - link "A nossa essência" [ref=f1e17] [cursor=pointer]:
+          - /url: "#philosophy"
+        - link "Notícias" [ref=f1e18] [cursor=pointer]:
+          - /url: "#news"
+        - link "Administração" [ref=f1e624] [cursor=pointer]:
+          - /url: "#admin"
+      - generic [ref=f1e19]:
+        - button "Pesquisar" [ref=f1e20] [cursor=pointer]
+        - link "Favoritos" [ref=f1e24] [cursor=pointer]:
+          - /url: "#favorites"
+        - button "A minha conta" [active] [ref=f1e625] [cursor=pointer]
+        - button "Notificações" [ref=f1e626] [cursor=pointer]
+        - button "Carrinho, 0 artigos" [ref=f1e32] [cursor=pointer]:
+          - generic [ref=f1e36]: Carrinho
+          - generic [ref=f1e37]: "0"
+  - generic [ref=f1e962]:
+    - complementary [ref=f1e963]:
+      - generic [ref=f1e964]:
+        - text: FORMA / STUDIO
+        - heading "O teu espaço de gestão." [level=2] [ref=f1e965]: O teu espaçode gestão.
+      - navigation "Administração" [ref=f1e966]:
+        - generic [ref=f1e967]:
+          - generic [ref=f1e968]: GESTÃO
+          - button "Visão geral" [ref=f1e969] [cursor=pointer]
+          - button "Encomendas" [ref=f1e978] [cursor=pointer]
+          - button "Produtos e stock" [ref=f1e983] [cursor=pointer]
+          - button "Movimentos de stock" [ref=f1e989] [cursor=pointer]
+          - button "Categorias" [ref=f1e1001] [cursor=pointer]
+        - generic [ref=f1e1008]:
+          - generic [ref=f1e1009]: CLIENTES
+          - button "Clientes" [ref=f1e1010] [cursor=pointer]
+          - button "Apoio ao cliente" [ref=f1e1017] [cursor=pointer]
+          - button "Devoluções" [ref=f1e1024] [cursor=pointer]
+          - button "Avaliações" [ref=f1e1031] [cursor=pointer]
+        - generic [ref=f1e1036]:
+          - generic [ref=f1e1037]: CONTEÚDO E CAMPANHAS
+          - button "Notícias" [ref=f1e1038] [cursor=pointer]
+          - button "Conjuntos" [ref=f1e1043] [cursor=pointer]
+          - button "Cupões" [ref=f1e1055] [cursor=pointer]
+        - generic [ref=f1e1060]:
+          - generic [ref=f1e1061]: SISTEMA
+          - button "Backups" [ref=f1e1062] [cursor=pointer]
+          - button "Integrações" [ref=f1e1067] [cursor=pointer]
+          - button "Atividade" [ref=f1e1072] [cursor=pointer]
+      - link "Voltar à loja" [ref=f1e1076] [cursor=pointer]:
+        - /url: "#"
+      - generic [ref=f1e1079]:
+        - generic [ref=f1e1080]: A
+        - generic [ref=f1e1081]:
+          - generic [ref=f1e1082]: Administrador FORMA
+          - generic [ref=f1e1083]: Administrador
+    - main [ref=f1e1087]:
+      - generic [ref=f1e1088]:
+        - generic [ref=f1e1089]:
+          - text: PAINEL DE ADMINISTRAÇÃO
+          - heading "Visão geral" [level=1] [ref=f1e1090]
+          - paragraph [ref=f1e1091]: Uma perspetiva clara de tudo o que acontece na tua loja.
+        - generic [ref=f1e1092]:
+          - button "Atualizar dados" [ref=f1e1093] [cursor=pointer]
+          - button "Exportar CSV" [ref=f1e1099] [cursor=pointer]
+      - generic [ref=f1e1110]:
+        - generic [ref=f1e1111]:
+          - generic [ref=f1e1112]:
+            - text: Atualizado às 22:31
+            - generic [ref=f1e1114]: 06/10 — 04/11 · dias UTC
+          - group "Período do dashboard" [ref=f1e1115]:
+            - button "7 dias" [ref=f1e1116] [cursor=pointer]
+            - button "30 dias" [pressed] [ref=f1e1117] [cursor=pointer]
+            - button "90 dias" [ref=f1e1118] [cursor=pointer]
+        - generic [ref=f1e1119]:
+          - article [ref=f1e1120]:
+            - generic [ref=f1e1121]: Receita aprovada
+            - strong [ref=f1e1127]: 0,00 €
+            - generic [ref=f1e1128]: Sem variação vs. período anterior
+            - generic [ref=f1e1129]: 0 encomenda(s) paga(s) · pagamentos de teste
+          - article [ref=f1e1130]:
+            - generic [ref=f1e1131]: Encomendas
+            - strong [ref=f1e1137]: "0"
+            - generic [ref=f1e1138]: Sem variação vs. período anterior
+            - generic [ref=f1e1139]: 0 cancelada(s) neste período
+          - article [ref=f1e1140]:
+            - generic [ref=f1e1141]: Valor médio
+            - strong [ref=f1e1147]: 0,00 €
+            - generic [ref=f1e1148]: Sem variação vs. período anterior
+            - generic [ref=f1e1149]: Por encomenda com pagamento aprovado
+          - article [ref=f1e1150]:
+            - generic [ref=f1e1151]: Novos clientes
+            - strong [ref=f1e1159]: "0"
+            - generic [ref=f1e1160]: Sem variação vs. período anterior
+            - generic [ref=f1e1161]: 0 clientes no total
+        - generic [ref=f1e1162]:
+          - generic [ref=f1e1163]:
+            - generic [ref=f1e1164]:
+              - heading "O que precisa de ti" [level=2] [ref=f1e1165]
+              - paragraph [ref=f1e1166]: Pendentes atuais, independentemente do período selecionado.
+            - generic [ref=f1e1167]: OPERAÇÃO
+          - generic [ref=f1e1168]:
+            - button "0 Para preparar" [ref=f1e1169] [cursor=pointer]:
+              - strong [ref=f1e1174]: "0"
+              - generic [ref=f1e1175]: Para preparar
+            - button "0 Para enviar" [ref=f1e1179] [cursor=pointer]:
+              - strong [ref=f1e1190]: "0"
+              - generic [ref=f1e1191]: Para enviar
+            - button "0 Por pagar" [ref=f1e1195] [cursor=pointer]:
+              - strong [ref=f1e1199]: "0"
+              - generic [ref=f1e1200]: Por pagar
+            - button "0 Pedidos de apoio" [ref=f1e1204] [cursor=pointer]:
+              - strong [ref=f1e1207]: "0"
+              - generic [ref=f1e1208]: Pedidos de apoio
+            - button "0 Devoluções abertas" [ref=f1e1212] [cursor=pointer]:
+              - strong [ref=f1e1218]: "0"
+              - generic [ref=f1e1219]: Devoluções abertas
+            - button "1 Opções com stock baixo" [ref=f1e1223] [cursor=pointer]:
+              - strong [ref=f1e1229]: "1"
+              - generic [ref=f1e1230]: Opções com stock baixo
+        - generic [ref=f1e1234]:
+          - generic [ref=f1e1235]:
+            - generic [ref=f1e1236]:
+              - generic [ref=f1e1237]:
+                - heading "Evolução da receita" [level=2] [ref=f1e1238]
+                - paragraph [ref=f1e1239]: Encomendas pagas, sem cancelamentos ou reembolsos.
+              - generic [ref=f1e1240]: Aprovado
+            - generic [ref=f1e1242]:
+              - text: 0,00 €
+              - generic [ref=f1e1243]: nos últimos 30 dias
+            - generic [ref=f1e1244]:
+              - generic [ref=f1e1245]:
+                - generic [ref=f1e1246]: 1,00 €
+                - generic [ref=f1e1247]: 0,50 €
+                - generic [ref=f1e1248]: 0 €
+              - generic [ref=f1e1249]:
+                - img "Receita diária, 30 dias. Total 0,00 €. Consulta os valores na tabela abaixo." [ref=f1e1250]
+                - generic [ref=f1e1251]:
+                  - generic [ref=f1e1252]: 06/10
+                  - generic [ref=f1e1253]: 21/10
+                  - generic [ref=f1e1254]: 04/11
+            - paragraph [ref=f1e1255]: Ainda não há pagamentos aprovados neste período.
+            - button "Consultar valores diários" [ref=f1e1256] [cursor=pointer]
+          - generic [ref=f1e1257]:
+            - generic [ref=f1e1259]:
+              - heading "Mais vendidos" [level=2] [ref=f1e1260]
+              - paragraph [ref=f1e1261]: Unidades em encomendas pagas neste período.
+            - generic [ref=f1e1265]:
+              - heading "A tua próxima venda começa aqui." [level=3] [ref=f1e1269]
+              - paragraph [ref=f1e1270]: Os produtos mais vendidos aparecem depois do primeiro pagamento aprovado.
+              - button "Gerir coleção" [ref=f1e1271] [cursor=pointer]
+            - paragraph [ref=f1e1274]: Valores dos artigos antes de cupões e portes.
+        - generic [ref=f1e1275]:
+          - generic [ref=f1e1276]:
+            - generic [ref=f1e1277]:
+              - heading "Últimas encomendas" [level=2] [ref=f1e1278]
+              - paragraph [ref=f1e1279]: As seis mais recentes, em todos os períodos.
+            - button "Ver todas" [ref=f1e1280] [cursor=pointer]
+          - generic [ref=f1e1283]:
+            - heading "Ainda não há encomendas." [level=3] [ref=f1e1288]
+            - paragraph [ref=f1e1289]: Os novos pedidos ficam disponíveis aqui.
+        - generic [ref=f1e1290]:
+          - generic [ref=f1e1291]:
+            - generic [ref=f1e1292]:
+              - generic [ref=f1e1293]:
+                - heading "Inventário em atenção" [level=2] [ref=f1e1294]
+                - paragraph [ref=f1e1295]: Opções ativas com cinco unidades ou menos.
+              - button "Gerir stock" [ref=f1e1296] [cursor=pointer]
+            - button "Sofá Horizonte Padrão 4 un." [ref=f1e1300] [cursor=pointer]:
+              - generic [ref=f1e1301]:
+                - generic [ref=f1e1302]: Sofá Horizonte
+                - generic [ref=f1e1303]: Padrão
+              - generic [ref=f1e1304]: 4 un.
+          - generic [ref=f1e1305]:
+            - generic [ref=f1e1307]:
+              - heading "Preços que despertam interesse" [level=2] [ref=f1e1308]
+              - paragraph [ref=f1e1309]: Alertas ativos nos favoritos dos clientes.
+            - generic [ref=f1e1315]:
+              - generic [ref=f1e1316]:
+                - generic [ref=f1e1317]: "0"
+                - text: alertas ativos
+              - generic [ref=f1e1318]:
+                - generic [ref=f1e1319]: "0"
+                - text: pessoas a acompanhar
+            - paragraph [ref=f1e1320]: Quando alguém ativar um alerta nos favoritos, vais saber quais os produtos com mais interesse.
+            - paragraph [ref=f1e1321]: Uma redução de preço gera notificações internas automaticamente.
+        - generic [ref=f1e1322]:
+          - generic [ref=f1e1323]:
+            - generic [ref=f1e1324]:
+              - generic [ref=f1e1325]:
+                - heading "Atividade recente" [level=2] [ref=f1e1326]
+                - paragraph [ref=f1e1327]: As últimas alterações na loja.
+              - button "Ver histórico" [ref=f1e1328] [cursor=pointer]
+            - generic [ref=f1e1331]:
+              - generic [ref=f1e1334]:
+                - text: Início de sessão
+                - paragraph [ref=f1e1335]: Autenticação com sucesso.
+                - time [ref=f1e1336]: 04/11/2026, 22:31
+              - generic [ref=f1e1339]:
+                - text: Início de sessão
+                - paragraph [ref=f1e1340]: Autenticação com sucesso.
+                - time [ref=f1e1341]: 04/11/2026, 16:49
+              - generic [ref=f1e1344]:
+                - text: Início de sessão
+                - paragraph [ref=f1e1345]: Autenticação com sucesso.
+                - time [ref=f1e1346]: 03/11/2026, 22:31
+              - generic [ref=f1e1349]:
+                - text: Integrações atualizadas
+                - paragraph [ref=f1e1350]: Configuração de IA/SMTP alterada. Credenciais omitidas.
+                - time [ref=f1e1351]: 03/11/2026, 22:15
+              - generic [ref=f1e1354]:
+                - text: Integrações atualizadas
+                - paragraph [ref=f1e1355]: Configuração de IA/SMTP alterada. Credenciais omitidas.
+                - time [ref=f1e1356]: 03/11/2026, 22:14
+          - generic [ref=f1e1357]:
+            - text: FERRAMENTAS DA LOJA
+            - heading "Mais tempo para o que importa." [level=2] [ref=f1e1358]
+            - paragraph [ref=f1e1359]: O catálogo tem 60 produtos ativos. Mantém os dados organizados e as integrações prontas.
+            - generic [ref=f1e1360]: Serviço de tarefas ativo
+            - generic [ref=f1e1362]:
+              - button "Cópias de segurança" [ref=f1e1363] [cursor=pointer]
+              - button "Gerir integrações" [ref=f1e1367] [cursor=pointer]
+              - button "Consultar clientes" [ref=f1e1371] [cursor=pointer]
+            - group [ref=f1e1375]:
+              - generic "Resumo de gestão com IA" [ref=f1e1376] [cursor=pointer]
+      - generic [ref=f1e1107]:
+        - generic [ref=f1e1108]: FORMA STUDIO
+        - generic [ref=f1e1109]: Dados reais da tua loja · Atualiza para consultar alterações recentes.
