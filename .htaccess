@@ -1,6 +1,7 @@
 Options -Indexes
 <IfModule mod_rewrite.c>
 RewriteEngine On
+RewriteRule ^auth/google/callback\.php$ public/auth/google/callback.php [L]
 RewriteRule ^(server|database|storage|scripts|tests|node_modules|src|\.tools|\.git)(/|$) - [F,L]
 RewriteRule (^|/)\.(?!well-known) - [F,L]
 </IfModule>
