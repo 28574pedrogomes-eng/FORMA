@@ -374,23 +374,68 @@ def add_vase(name, w, d, h, m, description):
 def add_textile(name, w, d, h, m, description):
     text = normal(name + ' ' + description)
     if 'tapete' in text or 'passadeira' in text or 'carpete' in text:
-        cube('Tapete tecido', (0, 0, .018), (w, d, .035), m['fabric'], .008)
-        for i in range(7):
-            x = -w * .42 + i * w * .14
-            cube('Faixa do padrão', (x, 0, .039), (w * .035, d * .92, .008), m['accent'] if i % 2 == 0 else m['accent2'], .002)
+        base_z = .018; thickness = max(.018, min(.04, h * .35))
+        nx, ny = 22, 24; verts, faces = [], []
+        for row in range(ny + 1):
+            v = row / ny; y = -d * .5 + d * v
+            for col in range(nx + 1):
+                u = col / nx; x = -w * .5 + w * u
+                edge = abs(u * 2 - 1) ** 8 * abs(v * 2 - 1) ** 8
+                ripple = .003 * math.sin(u * math.tau * 3 + v * 2.4) * max(abs(u * 2 - 1), abs(v * 2 - 1)) ** 3
+                verts.append((x, y, base_z + thickness * .52 + .014 * edge + ripple))
+        for row in range(ny):
+            for col in range(nx):
+                a = row * (nx + 1) + col; faces.append((a, a + 1, a + nx + 2, a + nx + 1))
+        rug_mesh = bpy.data.meshes.new('Malha ondulada do tapete'); rug_mesh.from_pydata(verts, [], faces); rug_mesh.materials.append(m['fabric']); rug_mesh.update()
+        rug = bpy.data.objects.new('Tapete com cantos levantados', rug_mesh); bpy.context.collection.objects.link(rug)
+        for poly in rug_mesh.polygons: poly.use_smooth = True
+        rug_thickness = rug.modifiers.new('Espessura do tapete', 'SOLIDIFY'); rug_thickness.thickness = thickness; rug_thickness.offset = -1
+        cube('Rebordo tecido', (0, 0, base_z + thickness * .58), (w * .94, d * .94, .012), m['accent'], .008)
+        for i in range(13):
+            x = -w * .39 + i * w * .065
+            cube('Nervura da trama', (x, 0, base_z + thickness + .004), (w * .018, d * .88, .008), m['accent2'] if i % 3 == 0 else m['fabric_light'], .003)
+        for i in range(19):
+            y = -d * .40 + i * d * .044
+            cube('Fio transversal', (0, y, base_z + thickness + .006), (w * .86, d * .006, .006), m['fabric_light'], .002)
+        for edge_y in (-d * .49, d * .49):
+            for i in range(17):
+                x = -w * .43 + i * w * .054
+                rod('Franja do tapete', (x, edge_y, .023), (x + (i % 2 - .5) * .012, edge_y * 1.055, .017), .0035, m['fabric_light'])
     elif 'almofada' in text:
-        pillow = cube('Almofada acolchoada', (0, 0, h * .50), (w * .92, d * .92, h), m['fabric'], .08)
+        cube('Almofada interior', (0, 0, h * .50), (w * .91, d * .91, h * .88), m['fabric'], min(.08, h * .28))
+        for side in (-1, 1):
+            y = side * d * .458
+            rod('Pesponto lateral', (-w * .39, y, h * .50), (w * .39, y, h * .50), .0025, m['fabric_light'])
+            rod('Pesponto de canto', (side * w * .455, -d * .37, h * .50), (side * w * .455, d * .37, h * .50), .0025, m['fabric_light'])
         if 'riscas' in text or 'espiga' in text or 'paleta' in text:
             for i in range(5):
                 x = -w * .36 + i * w * .18
-                cube('Padrão tecido', (x, -d * .474, h * .53), (w * .07, .012, h * .68), m['accent'] if i % 2 == 0 else m['accent2'], .005)
+                cube('Padrao tecido', (x, -d * .474, h * .53), (w * .07, .012, h * .68), m['accent'] if i % 2 == 0 else m['accent2'], .005)
     else:
-        cube('Tecido dobrado', (0, 0, h * .47), (w * .94, d * .92, h), m['fabric'], .045)
-        for i in range(10):
-            x = -w * .43 + i * w * .095
-            cube('Dobra do tecido', (x, 0, h * 1.01), (w * .018, d * .84, .008), m['fabric_light'], .002)
-
-
+        # Static gravity-inspired cloth geometry keeps GLB models lightweight and deterministic.
+        nx, ny = 28, 32; verts, faces = [], []
+        cloth_h = max(.13, min(.32, h * 2.2)); base_z = .035
+        for row in range(ny + 1):
+            v = row / ny; y = -d * .47 + d * .94 * v
+            for col in range(nx + 1):
+                u = col / nx; x = -w * .47 + w * .94 * u
+                fold = math.sin(u * math.tau * 6 + v * 3.2) * .012 + math.sin(u * math.tau * 11 - v * 4.5) * .005
+                center_lift = cloth_h * (.36 + .48 * math.sin(math.pi * u) ** .65)
+                front_drop = cloth_h * .58 * max(0, (v - .78) / .22) ** 1.25
+                side_drop = cloth_h * .20 * max(0, (abs(u - .5) - .39) / .11) ** 1.4
+                sag = center_lift - front_drop - side_drop + fold
+                verts.append((x, y, max(.012, base_z + sag)))
+        for row in range(ny):
+            for col in range(nx):
+                a = row * (nx + 1) + col; faces.append((a, a + 1, a + nx + 2, a + nx + 1))
+        mesh = bpy.data.meshes.new('Malha fluida da manta'); mesh.from_pydata(verts, [], faces); mesh.materials.append(m['fabric_light']); mesh.update()
+        sheet = bpy.data.objects.new('Manta com queda e pregas', mesh); bpy.context.collection.objects.link(sheet)
+        for poly in mesh.polygons: poly.use_smooth = True
+        solid = sheet.modifiers.new('Espessura macia do tecido', 'SOLIDIFY'); solid.thickness = .009
+        for edge_y in (-d * .47, d * .47): rod('Costura da bainha', (-w * .46, edge_y, .04), (w * .46, edge_y, .04), .003, m['accent'])
+        for i in range(7):
+            x = -w * .36 + i * w * .12
+            rod('Vinco longo da manta', (x, -d * .34, base_z + cloth_h * .55), (x + .012, d * .31, base_z + cloth_h * .55), .0025, m['fabric'])
 def add_rug(name, w, d, h, m, description):
     add_textile(name, w, d, h, m, description)
 
@@ -483,7 +528,9 @@ def build(product):
     bpy.context.scene.unit_settings.system = 'METRIC'; bpy.context.scene.unit_settings.scale_length = 1.0
     bpy.ops.object.select_all(action='SELECT')
     for obj in bpy.context.selected_objects: obj.select_set(True)
-    filepath = os.path.join(OUT, product['slug'] + '.glb')
+    # Match the browser loader: normalize the display name, remove accents, then slug it.
+    asset_slug = re.sub(r'[^a-z0-9]+', '-', normal(product['name'])).strip('-')
+    filepath = os.path.join(OUT, asset_slug + '.glb')
     bpy.ops.export_scene.gltf(filepath=filepath, export_format='GLB', export_apply=True, export_materials='EXPORT', export_image_format='AUTO', export_lights=False, export_cameras=False, export_yup=True, use_selection=True)
     return filepath
 

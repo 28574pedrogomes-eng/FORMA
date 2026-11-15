@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { Armchair, ArrowLeft, Check, ChevronDown, Copy, Grid2X2, Home, Lamp, Maximize2, Minus, Move3D, Plus, RotateCw, Save, Search, Sofa, Trash2, X } from 'lucide-react';
+import { Armchair, ArrowLeft, Check, ChevronDown, Copy, Grid2X2, Home, Lamp, Layers, Maximize2, Minus, Move3D, Plus, RotateCw, Save, Search, Sofa, Trash2, X } from 'lucide-react';
 import { api, money } from './api';
 import { ErrorNotice, Loading } from './ui';
 import './room-planner.css';
@@ -19,8 +19,8 @@ const kindOf = product => {
   if (/almofada|manta|colcha|edredao|textil|tecido/.test(text)) return 'textile';
   if (/cama|colchao|cabeceira/.test(text)) return 'bed';
   if (/mesa e cozinha|caneca|chavena|copo|taca|prato|pires|servico/.test(text)) return 'tableware';
-  if (/mesa|secretaria|aparador|consola/.test(text)) return 'table';
   if (/candeeiro|lampada|luz|iluminacao/.test(text)) return 'light';
+  if (/mesa|secretaria|aparador|consola/.test(text)) return 'table';
   if (/estante|prateleira|armario|arrumacao|livro/.test(text)) return 'storage';
   if (/tapete|passadeira/.test(text)) return 'rug';
   if (/planta|vaso|jarr|decor|espelho|cesto|vela|castical|escultura|lanterna/.test(text)) return 'decor';
@@ -77,7 +77,7 @@ function loadProductModel(product) {
     asset.scale.set(scaleX, scaleY, scaleZ);
     asset.position.set(-center.x * scaleX, -bounds.min.y * scaleY, -center.z * scaleZ);
     model.add(asset);
-    model.userData.productId = Number(product.id); model.userData.width = width / 100; model.userData.depth = depth / 100; model.userData.kind = kindOf(product); model.userData.productName = product.name;
+    model.userData.productId = Number(product.id); model.userData.width = width / 100; model.userData.depth = depth / 100; model.userData.height = height / 100; model.userData.supportHeight = supportHeight(product) / 100; model.userData.kind = kindOf(product); model.userData.productName = product.name;
     model.traverse(object => { object.userData.productId = Number(product.id); });
     return model;
   });
@@ -104,6 +104,7 @@ function findOverlappingItems(items, products) {
   const overlaps = new Set();
   for (let i = 0; i < items.length; i += 1) for (let j = i + 1; j < items.length; j += 1) {
     const first = items[i], second = items[j];
+    if (first.supportUid === second.uid || second.supportUid === first.uid) continue;
     const firstSize = dimensions(products.find(product => Number(product.id) === Number(first.productId)));
     const secondSize = dimensions(products.find(product => Number(product.id) === Number(second.productId)));
     const firstRotated = Number(first.rotation) % 180 !== 0, secondRotated = Number(second.rotation) % 180 !== 0;
@@ -112,6 +113,30 @@ function findOverlappingItems(items, products) {
     if (Math.abs(Number(first.x) - Number(second.x)) < (firstWidth + secondWidth) / 2 - 1 && Math.abs(Number(first.z) - Number(second.z)) < (firstDepth + secondDepth) / 2 - 1) { overlaps.add(first.uid); overlaps.add(second.uid); }
   }
   return overlaps;
+}
+
+function supportHeight(product) {
+  const size = dimensions(product), name = norm(product?.name || '');
+  if (size.kind === 'table') return /centro|cafe|lateral/.test(name) ? 43 : Math.min(82, size.height);
+  if (size.kind === 'storage') return size.height;
+  if (size.kind === 'bed') return Math.min(size.height, size.height * .82);
+  return 0;
+}
+
+function findSupport(item, x, z, items, products) {
+  const product = products.find(row => Number(row.id) === Number(item.productId));
+  const kind = dimensions(product).kind;
+  const stackable = ['decor', 'tableware', 'textile'].includes(kind) || (kind === 'light' && !/chao|pe|arco|suspens|aplique/.test(norm(product?.name || '')));
+  if (!stackable) return null;
+  return [...items].reverse().find(candidate => {
+    if (candidate.uid === item.uid || candidate.supportUid === item.uid) return false;
+    const base = products.find(row => Number(row.id) === Number(candidate.productId));
+    const baseSize = dimensions(base), top = supportHeight(base);
+    if (!top || !['table', 'storage', 'bed'].includes(baseSize.kind)) return false;
+    const rotated = Number(candidate.rotation) % 180 !== 0;
+    const bw = rotated ? baseSize.depth : baseSize.width, bd = rotated ? baseSize.width : baseSize.depth;
+    return Number(candidate.elevation || 0) === 0 && Math.abs(x - Number(candidate.x)) <= bw * .46 && Math.abs(z - Number(candidate.z)) <= bd * .46;
+  }) || null;
 }
 
 function woodTexture() {
@@ -183,7 +208,7 @@ function buildModel(product) {
       const top = new THREE.Mesh(new THREE.CylinderGeometry(w * .30, w * .31, .04, 28), wood); top.position.y = .5; group.add(top);
     }
   }
-  group.userData.productId = Number(product.id); group.userData.width = w; group.userData.depth = d; group.userData.kind = kind; group.userData.productName = product.name;
+  group.userData.productId = Number(product.id); group.userData.width = w; group.userData.depth = d; group.userData.height = dimensions(product).height / 100; group.userData.supportHeight = supportHeight(product) / 100; group.userData.kind = kind; group.userData.productName = product.name;
   group.traverse(child => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; child.userData.productId = Number(product.id); } });
   return group;
 }
@@ -241,13 +266,13 @@ function RoomViewport({ width, depth, products, items, selectedId, onSelect, onM
         if (event.button !== 0) return; coords(event);
         const targets = [...groupsRef.current.values()]; const intersections = ray.intersectObjects(targets, true);
         if (!intersections.length) { propsRef.current.onSelect(null); return; }
-        const instanceId = intersections[0].object.userData.instanceId; const group = groupsRef.current.get(instanceId); const productId = group?.userData.productId; const product = propsRef.current.products.find(p => Number(p.id) === Number(productId));
+        const hitId = intersections[0].object.userData.instanceId; const hitItem = propsRef.current.items.find(item => item.uid === hitId); const selectedItem = propsRef.current.items.find(item => item.uid === propsRef.current.selectedId); const instanceId = selectedItem && hitItem?.supportUid === selectedItem.uid ? selectedItem.uid : hitId; const group = groupsRef.current.get(instanceId); const productId = group?.userData.productId; const product = propsRef.current.products.find(p => Number(p.id) === Number(productId));
         if (!group || !product) return; propsRef.current.onSelect(instanceId);
         if (!ray.ray.intersectPlane(floorPlane, hit)) return;
         controls.enabled = false; dragRef.current = { instanceId, productId: Number(productId), group, offsetX: group.position.x - hit.x, offsetZ: group.position.z - hit.z, startX: event.clientX, startY: event.clientY, moved: false }; renderer.domElement.setPointerCapture?.(event.pointerId); event.preventDefault();
       };
-      const move = event => { const drag = dragRef.current; if (!drag) return; coords(event); if (!ray.ray.intersectPlane(floorPlane, hit)) return; const d = dimensions(propsRef.current.products.find(p => Number(p.id) === drag.productId)); const roomW = Number(propsRef.current.width) / 100, roomD = Number(propsRef.current.depth) / 100; const rotated = ((propsRef.current.items.find(item => item.uid === drag.instanceId)?.rotation || 0) % 180) !== 0; const fw = (rotated ? d.depth : d.width) / 100, fd = (rotated ? d.width : d.depth) / 100; drag.group.position.x = THREE.MathUtils.clamp(hit.x + drag.offsetX, -roomW / 2 + fw / 2, roomW / 2 - fw / 2); drag.group.position.z = THREE.MathUtils.clamp(hit.z + drag.offsetZ, -roomD / 2 + fd / 2, roomD / 2 - fd / 2); drag.moved ||= Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 4; };
-      const up = () => { const drag = dragRef.current; if (!drag) return; dragRef.current = null; controls.enabled = true; if (drag.moved) propsRef.current.onMove(drag.instanceId, Math.round((drag.group.position.x + Number(propsRef.current.width) / 200) * 100), Math.round((drag.group.position.z + Number(propsRef.current.depth) / 200) * 100)); };
+      const move = event => { const drag = dragRef.current; if (!drag) return; coords(event); if (!ray.ray.intersectPlane(floorPlane, hit)) return; const d = dimensions(propsRef.current.products.find(p => Number(p.id) === drag.productId)); const roomW = Number(propsRef.current.width) / 100, roomD = Number(propsRef.current.depth) / 100; const rotated = ((propsRef.current.items.find(item => item.uid === drag.instanceId)?.rotation || 0) % 180) !== 0; const fw = (rotated ? d.depth : d.width) / 100, fd = (rotated ? d.width : d.depth) / 100; const x = THREE.MathUtils.clamp(hit.x + drag.offsetX, -roomW / 2 + fw / 2, roomW / 2 - fw / 2), z = THREE.MathUtils.clamp(hit.z + drag.offsetZ, -roomD / 2 + fd / 2, roomD / 2 - fd / 2); drag.group.position.x = x; drag.group.position.z = z; const item = propsRef.current.items.find(row => row.uid === drag.instanceId); const support = item && findSupport(item, Math.round((x + roomW / 2) * 100), Math.round((z + roomD / 2) * 100), propsRef.current.items, propsRef.current.products); drag.group.position.y = support ? supportHeight(propsRef.current.products.find(p => Number(p.id) === Number(support.productId))) / 100 : 0; drag.supportUid = support?.uid || null; drag.elevation = support ? supportHeight(propsRef.current.products.find(p => Number(p.id) === Number(support.productId))) : 0; drag.moved ||= Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 4; };
+      const up = () => { const drag = dragRef.current; if (!drag) return; dragRef.current = null; controls.enabled = true; if (drag.moved) propsRef.current.onMove(drag.instanceId, Math.round((drag.group.position.x + Number(propsRef.current.width) / 200) * 100), Math.round((drag.group.position.z + Number(propsRef.current.depth) / 200) * 100), drag.elevation || 0, drag.supportUid || null); };
       renderer.domElement.addEventListener('pointerdown', down); renderer.domElement.addEventListener('pointermove', move); renderer.domElement.addEventListener('pointerup', up); renderer.domElement.addEventListener('pointercancel', up);
       renderer.domElement.addEventListener('wheel', event => { if (event.ctrlKey || event.metaKey) { event.preventDefault(); const next = THREE.MathUtils.clamp((propsRef.current.zoom || 1) + (event.deltaY < 0 ? .08 : -.08), .65, 1.8); propsRef.current.onZoom(next); } }, { passive: false });
       mount._cleanup = () => { cancelAnimationFrame(frame); observer.disconnect(); controls.dispose(); renderer.domElement.removeEventListener('pointerdown', down); renderer.domElement.removeEventListener('pointermove', move); renderer.domElement.removeEventListener('pointerup', up); renderer.domElement.removeEventListener('pointercancel', up); scene.traverse(obj => { if (obj.geometry && !obj.userData.catalogAsset) obj.geometry.dispose(); if (obj.material) { const materials = Array.isArray(obj.material) ? obj.material : [obj.material]; materials.forEach(mat => { if (!obj.userData.catalogAsset) mat.map?.dispose(); mat.dispose(); }); } }); renderer.dispose(); renderer.domElement.remove(); };
@@ -264,7 +289,7 @@ function RoomViewport({ width, depth, products, items, selectedId, onSelect, onM
     items.forEach(item => {
       const product = products.find(p => Number(p.id) === Number(item.productId)); if (!product) return;
       const id = item.uid || `piece-${item.productId}`, group = buildModel(product);
-      group.position.set(Number(item.x) / 100 - roomW / 2, 0, Number(item.z) / 100 - roomD / 2); group.rotation.y = THREE.MathUtils.degToRad(Number(item.rotation) || 0);
+      group.position.set(Number(item.x) / 100 - roomW / 2, Number(item.elevation || 0) / 100, Number(item.z) / 100 - roomD / 2); group.rotation.y = THREE.MathUtils.degToRad(Number(item.rotation) || 0);
       group.userData.instanceId = id;
       group.traverse(object => { object.userData.instanceId = id; });
       scene.add(group); groupsRef.current.set(id, group);
@@ -348,7 +373,10 @@ function RoomPlan2D({ width, depth, products, items, selectedId, onSelect, onMov
         const isSelected = item.uid === selectedId, kind = size.kind;
         const fill = kind === 'seating' ? '#879487' : kind === 'bed' ? '#a89988' : kind === 'table' ? '#b58f66' : kind === 'rug' ? '#c6ae8b' : kind === 'storage' ? '#a88969' : kind === 'light' ? '#d5c49d' : '#a4a78e';
         const overlaps = overlapIds.has(item.uid);
-        return <g key={item.uid} className={`room-plan-piece${isSelected ? ' is-selected' : ''}${overlaps ? ' is-overlapping' : ''}`} transform={`translate(${item.x} ${item.z}) rotate(${Number(item.rotation) || 0})`} onPointerDown={event => start(event, item, product)} onClick={event => { event.stopPropagation(); onSelect(item.uid); }} role="button" aria-label={`${product.name}, ${size.width} por ${size.depth} centímetros${overlaps ? ', sobreposta a outra peça' : ''}`} aria-pressed={isSelected} tabIndex="0" onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect(item.uid); } else if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)) { event.preventDefault(); const delta = event.key === 'ArrowLeft' ? [-grid,0] : event.key === 'ArrowRight' ? [grid,0] : event.key === 'ArrowUp' ? [0,-grid] : [0,grid]; onSelect(item.uid); onMove(item.uid,Number(item.x)+delta[0],Number(item.z)+delta[1]); } }}>
+        const support = items.find(row => row.uid === item.supportUid);
+        const supportProduct = support && products.find(row => Number(row.id) === Number(support.productId));
+        const selectedSupport = items.find(row => row.uid === selectedId && item.supportUid === row.uid);
+        return <g key={item.uid} data-support-uid={item.supportUid || ''} data-elevation={item.elevation || 0} className={`room-plan-piece${isSelected ? ' is-selected' : ''}${overlaps ? ' is-overlapping' : ''}${support ? ' is-stacked' : ''}`} style={selectedSupport ? { pointerEvents: 'none' } : undefined} transform={`translate(${item.x} ${item.z}) rotate(${Number(item.rotation) || 0})`} onPointerDown={event => start(event, item, product)} onClick={event => { event.stopPropagation(); onSelect(item.uid); }} role="button" aria-label={`${product.name}, ${size.width} por ${size.depth} centímetros${support ? `, sobre ${supportProduct?.name || 'outra peça'}` : overlaps ? ', sobreposta a outra peça' : ''}`} aria-pressed={isSelected} tabIndex="0" onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect(item.uid); } else if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)) { event.preventDefault(); const delta = event.key === 'ArrowLeft' ? [-grid,0] : event.key === 'ArrowRight' ? [grid,0] : event.key === 'ArrowUp' ? [0,-grid] : [0,grid]; onSelect(item.uid); onMove(item.uid,Number(item.x)+delta[0],Number(item.z)+delta[1]); } }}>
           <rect className="room-plan-hit-area" x={-size.width / 2 - 2} y={-size.depth / 2 - 2} width={size.width + 4} height={size.depth + 4} rx={Math.min(12, size.depth * .08)} fill="transparent" />
           <g filter="url(#planner-piece-shadow)">
             <rect x={-size.width / 2} y={-size.depth / 2} width={size.width} height={size.depth} rx={kind === 'rug' ? 2 : Math.min(10, size.depth * .09)} fill={fill} stroke={isSelected ? '#344b38' : '#6e786e'} strokeWidth={isSelected ? 3 : 1.5} vectorEffect="non-scaling-stroke" />
@@ -358,6 +386,7 @@ function RoomPlan2D({ width, depth, products, items, selectedId, onSelect, onMov
             {kind === 'storage' && <><line x1={-size.width * .4} x2={size.width * .4} y1={-size.depth * .17} y2={-size.depth * .17} stroke="#745b43" strokeWidth="1.5" vectorEffect="non-scaling-stroke"/><line x1={-size.width * .4} x2={size.width * .4} y1={size.depth * .17} y2={size.depth * .17} stroke="#745b43" strokeWidth="1.5" vectorEffect="non-scaling-stroke"/></>}
           </g>
           <text className="room-plan-label" x="0" y={size.depth / 2 + 14} textAnchor="middle" pointerEvents="none">{product.name}</text>
+          {support && <g className="room-plan-stack-mark" aria-hidden="true"><circle cx={size.width / 2 - 9} cy={-size.depth / 2 + 9} r="8"/><text x={size.width / 2 - 9} y={-size.depth / 2 + 12} textAnchor="middle">↑</text><title>Sobre {supportProduct?.name}</title></g>}
         </g>;
       })}
     </svg>
@@ -405,10 +434,27 @@ export function RoomPlanner({ onProduct }) {
     const next = { productId: Number(product.id), uid: makeUid(), x: placement.x, z: placement.z, rotation: 0 };
     setItems(current => [...current, next]); setSelectedId(next.uid); setNotice(`${product.name} adicionada à divisão.`);
   }, [items, catalog, width, depth]);
-  function removeProduct(instanceId) { setItems(current => current.filter(item => item.uid !== instanceId)); setSelectedId(null); }
-  function rotateProduct(instanceId) { setItems(current => current.map(item => item.uid === instanceId ? fitItem({ ...item, rotation: ((Number(item.rotation) || 0) + 90) % 360 }, width, depth) : item)); }
-  function moveProduct(instanceId, x, z) { setItems(current => current.map(item => item.uid === instanceId ? fitItem({ ...item, x, z }, width, depth) : item)); }
-  function saveProject() { const project = { id: makeUid(), name: name.trim() || 'Projeto sem nome', width: Number(width), depth: Number(depth), budget: Number(budget), items: items.map(({ productId, x, z, rotation }) => ({ productId, x, z, rotation })), productIds: items.map(item => item.productId), updatedAt: new Date().toISOString() }; const next = [project, ...projects.filter(row => row.name !== project.name)].slice(0, 20); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); setProjects(next); setNotice('Projeto guardado neste navegador.'); }
+  function removeProduct(instanceId) { setItems(current => current.filter(item => item.uid !== instanceId).map(item => item.supportUid === instanceId ? { ...item, supportUid: null, elevation: 0 } : item)); setSelectedId(null); }
+  function rotateProduct(instanceId) { setItems(current => {
+    const parent = current.find(item => item.uid === instanceId); if (!parent) return current;
+    const nextRotation = ((Number(parent.rotation) || 0) + 90) % 360;
+    return current.map(item => {
+      if (item.uid === instanceId) return fitItem({ ...item, rotation: nextRotation }, width, depth);
+      if (item.supportUid !== instanceId) return item;
+      const dx = Number(item.x) - Number(parent.x), dz = Number(item.z) - Number(parent.z);
+      return fitItem({ ...item, x: Number(parent.x) - dz, z: Number(parent.z) + dx, rotation: ((Number(item.rotation) || 0) + 90) % 360 }, width, depth);
+    });
+  }); }
+  function moveProduct(instanceId, x, z) { setItems(current => {
+    const moving = current.find(item => item.uid === instanceId); if (!moving) return current;
+    const product = catalog.find(row => Number(row.id) === Number(moving.productId));
+    const fitted = fitItem({ ...moving, x, z }, width, depth);
+    const support = findSupport(moving, fitted.x, fitted.z, current, catalog);
+    const elevation = support ? supportHeight(catalog.find(row => Number(row.id) === Number(support.productId))) : 0;
+    const dx = fitted.x - Number(moving.x), dz = fitted.z - Number(moving.z);
+    return current.map(item => item.uid === instanceId ? { ...fitted, supportUid: support?.uid || null, elevation } : item.supportUid === instanceId ? fitItem({ ...item, x: Number(item.x) + dx, z: Number(item.z) + dz }, width, depth) : item);
+  }); }
+  function saveProject() { const project = { id: makeUid(), name: name.trim() || 'Projeto sem nome', width: Number(width), depth: Number(depth), budget: Number(budget), items: items.map(({ productId, uid, x, z, rotation, elevation, supportUid }) => ({ productId, uid, x, z, rotation, elevation: elevation || 0, supportUid: supportUid || null })), productIds: items.map(item => item.productId), updatedAt: new Date().toISOString() }; const next = [project, ...projects.filter(row => row.name !== project.name)].slice(0, 20); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); setProjects(next); setNotice('Projeto guardado neste navegador.'); }
   function openProject(project) { setName(project.name); setWidth(Math.max(180,Math.min(1200,Number(project.width)||400))); setDepth(Math.max(180,Math.min(1200,Number(project.depth)||350))); setBudget(Math.max(0,Math.min(100000,Number(project.budget)||1000))); const rows = project.items || project.productIds.map((productId, i) => { const product = catalog.find(p => Number(p.id) === Number(productId)); const d = dimensions(product); return { productId: Number(productId), uid: makeUid(), x: 80 + d.width / 2 + (i % 2) * 100, z: 80 + d.depth / 2 + Math.floor(i / 2) * 100, rotation: 0 }; }); setItems(rows.map(item => ({ ...item, uid: item.uid || makeUid() }))); setSelectedId(null); setProjectMenu(false); setNotice(`Projeto “${project.name}” aberto.`); }
   function shareProject(project) { const payload = { name: project.name, width: project.width, depth: project.depth, budget: project.budget, items: project.items, productIds: project.productIds }; const bytes = new TextEncoder().encode(JSON.stringify(payload)); let binary = ''; bytes.forEach(byte => { binary += String.fromCharCode(byte); }); const token = btoa(binary); const link = `${location.origin}${location.pathname}#planner?project=${encodeURIComponent(token)}`; if (navigator.clipboard?.writeText) navigator.clipboard.writeText(link).then(() => setNotice('Link do projeto copiado.')).catch(() => setNotice(link)); else setNotice(link); }
   function deleteProject(id) { const next = projects.filter(project => project.id !== id); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); setProjects(next); }
@@ -460,7 +506,7 @@ export function RoomPlanner({ onProduct }) {
         </> : panel === 'room' ? <div className="planner-room-form"><p>Define o espaço para veres a planta à escala. Podes escrever a medida ou usar os controlos.</p><label>Nome do projeto<input value={name} maxLength={80} onChange={event => setName(event.target.value)}/></label><div className="planner-measure-row">{[['width','Largura',widthInput,setWidthInput],['depth','Comprimento',depthInput,setDepthInput]].map(([axis,label,value,setValue]) => <div className="planner-measure-control" key={axis}><label htmlFor={`room-${axis}`}>{label}</label><div className="planner-measure-stepper"><button type="button" aria-label={`Diminuir ${label.toLowerCase()} em 10 centímetros`} onClick={() => adjustDimension(axis,-10)}><Minus size={15}/></button><input id={`room-${axis}`} type="number" inputMode="numeric" min="180" max="1200" step="10" value={value} onChange={event => setValue(event.target.value)} onBlur={event => commitDimension(axis,event.target.value)} onKeyDown={event => { if (event.key === 'Enter') event.currentTarget.blur(); }} aria-describedby={`room-${axis}-hint`}/><button type="button" aria-label={`Aumentar ${label.toLowerCase()} em 10 centímetros`} onClick={() => adjustDimension(axis,10)}><Plus size={15}/></button></div><small id={`room-${axis}-hint`}>cm · entre 180 e 1200</small></div>)}</div><label>Orçamento<input type="number" min="0" max="100000" step="50" value={budget} onChange={event => setBudget(Math.max(0, Math.min(100000, Number(event.target.value) || 0)))}/><small>€</small></label><div className="planner-room-total"><span>Valor das peças</span><b>{money(total)}</b><small>{total > Number(budget) * 100 ? 'Acima do orçamento' : `${money(Math.max(0, Number(budget) * 100 - total))} disponíveis`}</small></div><button className="planner-save-button wide" onClick={saveProject}><Save size={16}/>Guardar projeto</button></div> : null}
       </aside>
 
-      {selected && <div className="planner-selection-card"><img src={selected.product.image} alt=""/><div><b>{selected.product.name}</b><span>{dimensions(selected.product).width} × {dimensions(selected.product).depth} cm · {money(selected.product.price_cents)}</span></div><button title="Rodar 90°" aria-label={`Rodar ${selected.product.name}`} onClick={() => rotateProduct(selected.item.uid)}><RotateCw size={17}/></button><button title="Eliminar da divisão" aria-label={`Eliminar ${selected.product.name} da divisão`} onClick={() => removeProduct(selected.item.uid)}><Trash2 size={17}/></button></div>}
+      {selected && <div className="planner-selection-card"><img src={selected.product.image} alt=""/><div><b>{selected.product.name}</b><span>{dimensions(selected.product).width} × {dimensions(selected.product).depth} cm · {money(selected.product.price_cents)}</span>{selected.item.supportUid && <span className="planner-stack-context">Sobre {catalog.find(product => Number(product.id) === Number(items.find(item => item.uid === selected.item.supportUid)?.productId))?.name || 'outra peça'}</span>}</div>{selected.item.supportUid && <button title="Selecionar o móvel de suporte" aria-label={`Selecionar suporte de ${selected.product.name}`} onClick={() => setSelectedId(selected.item.supportUid)}><Layers size={17}/></button>}<button title="Rodar 90°" aria-label={`Rodar ${selected.product.name}`} onClick={() => rotateProduct(selected.item.uid)}><RotateCw size={17}/></button><button title="Eliminar da divisão" aria-label={`Eliminar ${selected.product.name} da divisão`} onClick={() => removeProduct(selected.item.uid)}><Trash2 size={17}/></button></div>}
 
       <div className="planner-zoom-controls"><button aria-label="Reduzir zoom" onClick={() => setZoom(value => Math.max(.65, Math.round((value - .1) * 100) / 100))}><Minus size={16}/></button><span>{Math.round(zoom * 100)}%</span><button aria-label="Aumentar zoom" onClick={() => setZoom(value => Math.min(1.8, Math.round((value + .1) * 100) / 100))}><Plus size={16}/></button></div>
       <div className="planner-stage-status"><span><Move3D size={15}/>Arrasta para mover</span><span><RotateCw size={14}/>R para rodar</span><span className="planner-stage-count">{items.length} {items.length === 1 ? 'peça' : 'peças'} · {money(total)}</span></div>

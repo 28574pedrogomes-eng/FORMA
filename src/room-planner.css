@@ -23,6 +23,10 @@ body:has(.planner-editor){overflow:hidden;background:#eaf0f2}body:has(.planner-e
 .room-plan-piece:active{cursor:grabbing}
 .room-plan-piece:focus-visible rect:first-of-type{stroke:#344b38;stroke-width:3;vector-effect:non-scaling-stroke}
 .room-plan-piece.is-overlapping>g>rect:first-child{fill:#ddb6aa;stroke:#a34838;stroke-width:3;vector-effect:non-scaling-stroke}
+.room-plan-piece.is-stacked>g>rect:first-child{stroke:#61765e;stroke-width:2;stroke-dasharray:4 2;vector-effect:non-scaling-stroke}
+.room-plan-stack-mark circle{fill:#344b38;stroke:#fffdf8;stroke-width:1.5;vector-effect:non-scaling-stroke}
+.room-plan-stack-mark text{fill:#fff;font:700 11px Arial,sans-serif;stroke:none}
+.planner-stack-context{color:#536c53!important;font-weight:600}
 .room-plan-label{fill:#374238;font:600 11px 'DM Sans',Arial,sans-serif;paint-order:stroke;stroke:#f4f3ed;stroke-width:2px;stroke-linejoin:round}
 .room-plan-dimension{fill:#536456;font:600 13px 'DM Sans',Arial,sans-serif;letter-spacing:.02em}
 .room-plan-key{position:absolute;right:18px;bottom:18px;display:flex;align-items:center;gap:15px;padding:9px 12px;border:1px solid #e0e6df;border-radius:7px;background:#ffffffed;box-shadow:0 4px 14px #25372b12;color:#5e695f;font-size:10px;font-weight:600}

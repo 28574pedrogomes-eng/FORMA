@@ -5,7 +5,7 @@
         "category": "Iluminação",
         "description": "Linhas leves, presença marcante. A cadeira Arco combina madeira de carvalho com um assento envolvente, pensado para prolongar as conversas à mesa. Dimensões: 53 × 51 × 78 cm.",
         "material": "Carvalho natural",
-        "image": "images\/chair.jpg"
+        "image": "images/chair.jpg"
     },
     {
         "slug": "candeeiro-aura",
@@ -13,7 +13,7 @@
         "category": "Decoração",
         "description": "Linhas simples e luz direcionada para os teus momentos de leitura. Estrutura em metal com acabamento escuro e cabeça orientável. Casquilho E27, lâmpada não incluída. Altura: 42 cm.",
         "material": "Metal lacado",
-        "image": "images\/lamp.jpg"
+        "image": "images/lamp.jpg"
     },
     {
         "slug": "jarra-terra",
@@ -21,7 +21,7 @@
         "category": "Têxteis",
         "description": "Textura orgânica e um acabamento dourado que dá uma nota quente ao espaço. Uma peça que vive bem sozinha ou com os teus ramos favoritos. Altura: 24 cm. Vendida individualmente; composição ilustrativa.",
         "material": "Acabamento dourado",
-        "image": "images\/vase.jpg"
+        "image": "images/vase.jpg"
     },
     {
         "slug": "mesa-lateral-noma",
@@ -29,7 +29,7 @@
         "category": "Iluminação",
         "description": "Compacta, versátil e sempre por perto. Uma mesa de apoio em madeira pintada para o teu livro, o café da manhã e tudo o que importa. Dimensões: 42 × 42 × 48 cm.",
         "material": "Madeira pintada",
-        "image": "images\/table.jpg"
+        "image": "images/table.jpg"
     },
     {
         "slug": "almofada-linho",
@@ -37,15 +37,15 @@
         "category": "Mobiliário",
         "description": "Um toque de conforto natural. Capa removível em mistura de linho, fecho discreto e enchimento incluído. Dimensões: 45 × 45 cm. Lavagem delicada a 30 °C.",
         "material": "Linho e algodão",
-        "image": "images\/cushion.jpg"
+        "image": "images/cushion.jpg"
     },
     {
-        "slug": "vaso-bot-anico",
+        "slug": "vaso-botanico",
         "name": "Vaso Botânico",
         "category": "Têxteis",
         "description": "Um pequeno refúgio verde para a tua casa. Vaso decorativo em cerâmica esmaltada, com uma nota de cor suave. Planta ilustrativa, não incluída. Diâmetro: 18 cm.",
         "material": "Cerâmica esmaltada",
-        "image": "images\/plant.jpg"
+        "image": "images/plant.jpg"
     },
     {
         "slug": "manta-sereno",
@@ -53,7 +53,7 @@
         "category": "Mobiliário",
         "description": "Para os dias que pedem sofá. Uma manta macia com franjas delicadas e uma textura que convida a ficar. Dimensões: 130 × 170 cm.",
         "material": "Algodão reciclado",
-        "image": "images\/blanket.jpg"
+        "image": "images/blanket.jpg"
     },
     {
         "slug": "candeeiro-suspenso-lume",
@@ -61,15 +61,15 @@
         "category": "Decoração",
         "description": "Luz acolhedora sobre a mesa. Um candeeiro suspenso de formas suaves, em metal com acabamento dourado. Casquilho E27, lâmpada não incluída. Vendido individualmente; composição ilustrativa.",
         "material": "Metal dourado",
-        "image": "images\/floor-lamp.jpg"
+        "image": "images/floor-lamp.jpg"
     },
     {
-        "slug": "sof-a-brisa",
+        "slug": "sofa-brisa",
         "name": "Sofá Brisa",
         "category": "Mobiliário",
         "description": "Um lugar para ficar mais um pouco. Sofá de dois lugares com braços acolchoados, assento generoso e tecido em tom areia. Dimensões: 180 × 88 × 82 cm. Acessórios da composição não incluídos.",
         "material": "Tecido e madeira",
-        "image": "images\/sofa-brisa.jpg"
+        "image": "images/sofa-brisa.jpg"
     },
     {
         "slug": "poltrona-trama",
@@ -77,7 +77,7 @@
         "category": "Mobiliário",
         "description": "Uma silhueta leve para o teu canto de leitura. Assento envolvente em corda entrançada, sobre uma estrutura metálica escura. Dimensões: 74 × 72 × 84 cm. Para uso interior.",
         "material": "Corda e metal",
-        "image": "images\/poltrona-trama.jpg"
+        "image": "images/poltrona-trama.jpg"
     },
     {
         "slug": "mesa-de-centro-elo",
@@ -85,7 +85,7 @@
         "category": "Mobiliário",
         "description": "O ponto de encontro da sala. Tampo retangular em madeira de tom nogueira e pés cruzados com presença discreta. Dimensões: 110 × 60 × 40 cm. Decoração não incluída.",
         "material": "Madeira e metal",
-        "image": "images\/mesa-baixa-elo.jpg"
+        "image": "images/mesa-baixa-elo.jpg"
     },
     {
         "slug": "candeeiro-nuvem",
@@ -93,23 +93,23 @@
         "category": "Iluminação",
         "description": "Luz suave para fechar o dia. Candeeiro de mesa branco, com cúpula arredondada e base compacta. Altura: 40 cm. Casquilho E27, lâmpada não incluída.",
         "material": "Metal lacado",
-        "image": "images\/candeeiro-nuvem.jpg"
+        "image": "images/candeeiro-nuvem.jpg"
     },
     {
-        "slug": "suspens-ao-orbe",
+        "slug": "suspensao-orbe",
         "name": "Suspensão Orbe",
         "category": "Iluminação",
         "description": "Uma composição de globos opalinos que distribui a luz sobre a mesa. Estrutura metálica de acabamento escuro e altura ajustável. Largura: 80 cm. Lâmpadas não incluídas.",
         "material": "Vidro e metal",
-        "image": "images\/suspensao-orbe.jpg"
+        "image": "images/suspensao-orbe.jpg"
     },
     {
-        "slug": "candeeiro-de-p-e-linha",
+        "slug": "candeeiro-de-pe-linha",
         "name": "Candeeiro de pé Linha",
         "category": "Iluminação",
         "description": "Uma linha simples ao lado do sofá. Estrutura branca e cabeça orientável para dirigir a luz onde faz falta. Altura: 145 cm. Casquilho E27, lâmpada não incluída.",
         "material": "Metal lacado",
-        "image": "images\/candeeiro-linha.jpg"
+        "image": "images/candeeiro-linha.jpg"
     },
     {
         "slug": "jarras-duna-conjunto-de-2",
@@ -117,7 +117,7 @@
         "category": "Decoração",
         "description": "Duas formas orgânicas em tons areia e branco, para usar em conjunto ou em diferentes cantos da casa. Cerâmica de acabamento mate. Alturas: 22 e 28 cm. Ramos não incluídos.",
         "material": "Cerâmica mate",
-        "image": "images\/jarras-duna.jpg"
+        "image": "images/jarras-duna.jpg"
     },
     {
         "slug": "espelho-reflexo",
@@ -125,7 +125,7 @@
         "category": "Decoração",
         "description": "Um contorno orgânico que abre espaço à luz. Espelho de parede com perfil discreto, pensado para a entrada, o quarto ou a sala. Dimensões: 50 × 70 cm. Jarra e acessórios não incluídos.",
         "material": "Vidro espelhado",
-        "image": "images\/espelho-reflexo.jpg"
+        "image": "images/espelho-reflexo.jpg"
     },
     {
         "slug": "cesto-raiz",
@@ -133,7 +133,7 @@
         "category": "Decoração",
         "description": "Textura natural para organizar pequenos objetos ou acolher um vaso. Cesto entrançado em fibras vegetais, para uso interior. Diâmetro: 24 cm; altura: 25 cm. Planta e vaso interior não incluídos.",
         "material": "Fibras naturais",
-        "image": "images\/cesto-raiz.jpg"
+        "image": "images/cesto-raiz.jpg"
     },
     {
         "slug": "almofada-trama",
@@ -141,7 +141,7 @@
         "category": "Têxteis",
         "description": "Riscas azuis e tons naturais para dar ritmo ao sofá. Capa em algodão com fecho discreto e enchimento incluído. Dimensões: 45 × 45 cm. Lavagem delicada a 30 °C.",
         "material": "Algodão tecido",
-        "image": "images\/almofada-trama.jpg"
+        "image": "images/almofada-trama.jpg"
     },
     {
         "slug": "manta-abrigo",
@@ -149,7 +149,7 @@
         "category": "Têxteis",
         "description": "Uma nota de cor quente para os momentos de pausa. Manta de textura leve em tom terracota, fácil de dobrar e ter sempre à mão. Dimensões: 130 × 170 cm. Lavagem delicada a 30 °C.",
         "material": "Algodão",
-        "image": "images\/manta-abrigo.jpg"
+        "image": "images/manta-abrigo.jpg"
     },
     {
         "slug": "tapete-ritmo",
@@ -157,23 +157,23 @@
         "category": "Têxteis",
         "description": "Cor e desenho geométrico para dar personalidade a um espaço simples. Tapete de trama plana multicolor, para uso interior. Dimensões: 120 × 180 cm. Recomenda-se uma base antiderrapante, não incluída.",
         "material": "Algodão tecido",
-        "image": "images\/tapete-ritmo.jpg"
+        "image": "images/tapete-ritmo.jpg"
     },
     {
-        "slug": "cadeira-r-ustica",
+        "slug": "cadeira-rustica",
         "name": "Cadeira Rústica",
         "category": "Mobiliário",
         "description": "Uma cadeira de inspiração tradicional, com encosto de ripas e acabamento de aspeto envelhecido. Vendida à unidade. Para uso interior.",
         "material": "Madeira",
-        "image": "images\/collection-11112728.jpg"
+        "image": "images/collection-11112728.jpg"
     },
     {
-        "slug": "secret-aria-traco",
+        "slug": "secretaria-traco",
         "name": "Secretária Traço",
         "category": "Mobiliário",
         "description": "Um espaço de trabalho leve, com tampo em tom natural, gaveta e pernas metálicas. Cadeira, candeeiro e acessórios não incluídos.",
         "material": "Madeira e metal",
-        "image": "images\/collection-8437032.jpg"
+        "image": "images/collection-8437032.jpg"
     },
     {
         "slug": "aparador-horizonte",
@@ -181,7 +181,7 @@
         "category": "Mobiliário",
         "description": "Linhas simples, duas portas e três gavetas para organizar a sala. Acabamento em tom nogueira. Decoração não incluída.",
         "material": "Madeira folheada",
-        "image": "images\/collection-700549.jpg"
+        "image": "images/collection-700549.jpg"
     },
     {
         "slug": "banco-vereda",
@@ -189,7 +189,7 @@
         "category": "Mobiliário",
         "description": "Banco comprido com tampo em madeira e estrutura escura. Uma solução discreta para a entrada ou junto à mesa. Vendido à unidade, sem almofadas.",
         "material": "Madeira e metal",
-        "image": "images\/collection-3049121.jpg"
+        "image": "images/collection-3049121.jpg"
     },
     {
         "slug": "mesa-de-apoio-tronco",
@@ -197,7 +197,7 @@
         "category": "Mobiliário",
         "description": "Uma pequena mesa de apoio com tampo redondo de contorno natural e pernas metálicas brancas. O desenho do veio pode variar. Restante mobiliário não incluído.",
         "material": "Madeira e metal",
-        "image": "images\/collection-7746462.jpg"
+        "image": "images/collection-7746462.jpg"
     },
     {
         "slug": "poltrona-pausa",
@@ -205,23 +205,23 @@
         "category": "Mobiliário",
         "description": "Estrutura em madeira de tom natural e assento acolchoado cinzento para um canto de leitura. Uma poltrona, sem almofadas decorativas nem mesa.",
         "material": "Madeira e tecido",
-        "image": "images\/collection-5490341.jpg"
+        "image": "images/collection-5490341.jpg"
     },
     {
-        "slug": "sof-a-horizonte",
+        "slug": "sofa-horizonte",
         "name": "Sofá Horizonte",
         "category": "Mobiliário",
         "description": "Sofá de canto em tecido cinzento claro, com chaise longue e linhas direitas. Uma peça para reunir a família. Mesa, tapete e acessórios não incluídos.",
         "material": "Tecido e madeira",
-        "image": "images\/collection-11558114.jpg"
+        "image": "images/collection-11558114.jpg"
     },
     {
-        "slug": "consola-mem-oria",
+        "slug": "consola-memoria",
         "name": "Consola Memória",
         "category": "Mobiliário",
         "description": "Consola estreita em madeira de tom castanho com uma gaveta central. Ideal para guardar pequenos objetos à entrada. Candeeiro e copos não incluídos.",
         "material": "Madeira",
-        "image": "images\/collection-10308499.jpg"
+        "image": "images/collection-10308499.jpg"
     },
     {
         "slug": "candeeiro-de-mesa-alba",
@@ -229,15 +229,15 @@
         "category": "Iluminação",
         "description": "Uma base delicada e um abat-jour claro para luz ambiente na sala ou no quarto. Casquilho E27. Lâmpada e acessórios não incluídos.",
         "material": "Metal e tecido",
-        "image": "images\/collection-8834624.jpg"
+        "image": "images/collection-8834624.jpg"
     },
     {
-        "slug": "candeeiro-de-secret-aria-foco",
+        "slug": "candeeiro-de-secretaria-foco",
         "name": "Candeeiro de secretária Foco",
         "category": "Iluminação",
         "description": "Braço articulado e cabeça orientável para acompanhar a leitura e o trabalho. Casquilho E27. Lâmpada não incluída.",
         "material": "Metal cromado",
-        "image": "images\/collection-13068362.jpg"
+        "image": "images/collection-13068362.jpg"
     },
     {
         "slug": "aplique-globo",
@@ -245,7 +245,7 @@
         "category": "Iluminação",
         "description": "Um globo opalino suspenso numa curva metálica, pensado para uma luz suave na parede. Casquilho G9. Lâmpada não incluída. Requer instalação elétrica.",
         "material": "Vidro e metal",
-        "image": "images\/collection-33124324.jpg"
+        "image": "images/collection-33124324.jpg"
     },
     {
         "slug": "lanterna-vigia",
@@ -253,15 +253,15 @@
         "category": "Decoração",
         "description": "Lanterna branca perfurada com pega, para criar um ponto de luz com uma vela LED. Vela LED não incluída. Não é um candeeiro elétrico.",
         "material": "Metal pintado",
-        "image": "images\/collection-7746587.jpg"
+        "image": "images/collection-7746587.jpg"
     },
     {
-        "slug": "candeeiro-de-p-e-sombra",
+        "slug": "candeeiro-de-pe-sombra",
         "name": "Candeeiro de pé Sombra",
         "category": "Iluminação",
         "description": "Estrutura esguia e abat-jour escuro, para iluminação ambiente ao lado de uma poltrona. Casquilho E27. Lâmpada não incluída.",
         "material": "Metal e tecido",
-        "image": "images\/collection-32553376.jpg"
+        "image": "images/collection-32553376.jpg"
     },
     {
         "slug": "candeeiro-articulado-oficina",
@@ -269,15 +269,15 @@
         "category": "Iluminação",
         "description": "Um ponto de leitura com braço articulado e acabamento escuro com detalhes dourados. Casquilho E27. Lâmpada e restante mobiliário não incluídos.",
         "material": "Metal lacado",
-        "image": "images\/collection-31567419.jpg"
+        "image": "images/collection-31567419.jpg"
     },
     {
-        "slug": "candeeiro-de-p-e-iris",
+        "slug": "candeeiro-de-pe-iris",
         "name": "Candeeiro de pé Íris",
         "category": "Iluminação",
         "description": "Uma haste fina e uma cabeça orientável em preto para iluminar um detalhe da casa. Casquilho E14. Lâmpada não incluída.",
         "material": "Metal lacado",
-        "image": "images\/collection-19934344.jpg"
+        "image": "images/collection-19934344.jpg"
     },
     {
         "slug": "candeeiro-de-mesa-ponto",
@@ -285,7 +285,7 @@
         "category": "Iluminação",
         "description": "Cúpula arredondada e base circular branca para a secretária ou mesa de apoio. Casquilho E27. Lâmpada e acessórios de escritório não incluídos.",
         "material": "Metal lacado",
-        "image": "images\/collection-5797901.jpg"
+        "image": "images/collection-5797901.jpg"
     },
     {
         "slug": "jarras-silhueta-conjunto-de-3",
@@ -293,7 +293,7 @@
         "category": "Decoração",
         "description": "Três formas diferentes em cerâmica branca: redonda, alongada e de ombros suaves. Para compor uma prateleira ou usar separadamente.",
         "material": "Cerâmica mate",
-        "image": "images\/collection-14608172.jpg"
+        "image": "images/collection-14608172.jpg"
     },
     {
         "slug": "jarra-ondula",
@@ -301,7 +301,7 @@
         "category": "Decoração",
         "description": "Uma jarra pequena, de superfície ondulada e tom creme. Para um ramo curto ou para usar como objeto decorativo. Flor não incluída.",
         "material": "Cerâmica",
-        "image": "images\/collection-7291849.jpg"
+        "image": "images/collection-7291849.jpg"
     },
     {
         "slug": "jarras-contraste-conjunto-de-3",
@@ -309,15 +309,15 @@
         "category": "Decoração",
         "description": "Um conjunto em branco, cinzento e preto, com silhuetas complementares. Inclui três jarras. Flores não incluídas.",
         "material": "Cerâmica esmaltada",
-        "image": "images\/collection-13907998.jpg"
+        "image": "images/collection-13907998.jpg"
     },
     {
-        "slug": "jarra-transpar-encia",
+        "slug": "jarra-transparencia",
         "name": "Jarra Transparência",
         "category": "Decoração",
         "description": "Uma silhueta cilíndrica em vidro para ramos altos. O vidro deixa ver a composição por inteiro. Ramos e restante decoração não incluídos.",
         "material": "Vidro transparente",
-        "image": "images\/collection-7671139.jpg"
+        "image": "images/collection-7671139.jpg"
     },
     {
         "slug": "espelho-de-mesa-lua",
@@ -325,7 +325,7 @@
         "category": "Decoração",
         "description": "Espelho redondo de mesa com haste e base metálicas. Um detalhe prático para a cómoda ou toucador. Velas e jarra não incluídas.",
         "material": "Vidro e metal",
-        "image": "images\/collection-4108283.jpg"
+        "image": "images/collection-4108283.jpg"
     },
     {
         "slug": "velas-colmeia-conjunto-de-6",
@@ -333,7 +333,7 @@
         "category": "Decoração",
         "description": "Seis velas enroladas, de textura alveolada e tom mel. Usar num suporte estável, longe de materiais inflamáveis. Suporte e flores não incluídos.",
         "material": "Cera de abelha",
-        "image": "images\/collection-4637496.jpg"
+        "image": "images/collection-4637496.jpg"
     },
     {
         "slug": "jarra-anel",
@@ -341,7 +341,7 @@
         "category": "Decoração",
         "description": "Uma peça escultórica preta, com abertura central e acabamento brilhante. Para decorar um aparador. Tabuleiro, copo e castiçal não incluídos.",
         "material": "Cerâmica esmaltada",
-        "image": "images\/collection-7670689.jpg"
+        "image": "images/collection-7670689.jpg"
     },
     {
         "slug": "jarra-canelada",
@@ -349,7 +349,7 @@
         "category": "Decoração",
         "description": "Cerâmica em tom rosado e linhas verticais que dão textura à superfície. Uma jarra, sem ramos nem porta-velas.",
         "material": "Cerâmica",
-        "image": "images\/collection-26939371.jpg"
+        "image": "images/collection-26939371.jpg"
     },
     {
         "slug": "almofadas-paleta-conjunto-de-3",
@@ -357,7 +357,7 @@
         "category": "Têxteis",
         "description": "Três almofadas lisas em tons cru, ocre e verde acinzentado. Capas com fecho e enchimentos incluídos. Lavar as capas em programa delicado.",
         "material": "Algodão e linho",
-        "image": "images\/collection-8762876.jpg"
+        "image": "images/collection-8762876.jpg"
     },
     {
         "slug": "almofada-relevo",
@@ -365,7 +365,7 @@
         "category": "Têxteis",
         "description": "Almofada em tom ocre com pequenos relevos na frente. Inclui uma capa e enchimento. As restantes almofadas da composição não estão incluídas.",
         "material": "Algodão",
-        "image": "images\/collection-4993080.jpg"
+        "image": "images/collection-4993080.jpg"
     },
     {
         "slug": "almofada-terracota",
@@ -373,7 +373,7 @@
         "category": "Têxteis",
         "description": "Almofada retangular em tom quente, para misturar com padrões ou cores neutras. Capa removível e enchimento incluídos. Vendida à unidade.",
         "material": "Algodão",
-        "image": "images\/collection-6207459.jpg"
+        "image": "images/collection-6207459.jpg"
     },
     {
         "slug": "colcha-riscas",
@@ -381,7 +381,7 @@
         "category": "Têxteis",
         "description": "Riscas finas em tons neutros para vestir a cama com uma textura leve. Inclui uma colcha. Almofadas e roupa de cama não incluídas.",
         "material": "Algodão tecido",
-        "image": "images\/collection-5870893.jpg"
+        "image": "images/collection-5870893.jpg"
     },
     {
         "slug": "almofada-espiga",
@@ -389,7 +389,7 @@
         "category": "Têxteis",
         "description": "Padrão geométrico em cru e ocre, com textura em relevo. Inclui uma almofada pequena com enchimento. Restantes têxteis não incluídos.",
         "material": "Algodão tecido",
-        "image": "images\/collection-6123277.jpg"
+        "image": "images/collection-6123277.jpg"
     },
     {
         "slug": "almofada-jardim",
@@ -397,7 +397,7 @@
         "category": "Têxteis",
         "description": "Pequeno padrão floral azul sobre fundo claro para refrescar o quarto ou a sala. Inclui uma capa e enchimento. Manta não incluída.",
         "material": "Algodão estampado",
-        "image": "images\/collection-4989084.jpg"
+        "image": "images/collection-4989084.jpg"
     },
     {
         "slug": "colcha-ninho",
@@ -405,15 +405,15 @@
         "category": "Têxteis",
         "description": "Colcha clara de textura marcada para uma cama acolhedora. Uma peça de uso diário, fácil de combinar. Almofadas não incluídas.",
         "material": "Algodão tecido",
-        "image": "images\/collection-19878512.jpg"
+        "image": "images/collection-19878512.jpg"
     },
     {
-        "slug": "edred-ao-leve",
+        "slug": "edredao-leve",
         "name": "Edredão Leve",
         "category": "Têxteis",
         "description": "Edredão acolchoado em tom areia, com exterior em algodão e enchimento sintético leve. Inclui apenas o edredão, sem almofadas.",
         "material": "Algodão e poliéster",
-        "image": "images\/collection-12670586.jpg"
+        "image": "images/collection-12670586.jpg"
     },
     {
         "slug": "servico-areia-4-pecas",
@@ -421,15 +421,15 @@
         "category": "Mesa e cozinha",
         "description": "Um lugar completo em grés cinzento claro: prato raso, prato de sobremesa, taça e copo. Quatro peças para os pequenos rituais à mesa.",
         "material": "Grés",
-        "image": "images\/collection-11371877.jpg"
+        "image": "images/collection-11371877.jpg"
     },
     {
-        "slug": "ch-avena-solar-com-pires",
+        "slug": "chavena-solar-com-pires",
         "name": "Chávena Solar com pires",
         "category": "Mesa e cozinha",
         "description": "Chávena branca com padrão amarelo e pires a condizer. Inclui uma chávena e um pires. As restantes peças da fotografia não estão incluídas.",
         "material": "Cerâmica esmaltada",
-        "image": "images\/collection-17555891.jpg"
+        "image": "images/collection-17555891.jpg"
     },
     {
         "slug": "caneca-barro",
@@ -437,15 +437,15 @@
         "category": "Mesa e cozinha",
         "description": "Caneca de dois tons, com acabamento natural na base e esmalte claro na parte superior. Vendida à unidade. Restante loiça não incluída.",
         "material": "Grés esmaltado",
-        "image": "images\/collection-11808219.jpg"
+        "image": "images/collection-11808219.jpg"
     },
     {
-        "slug": "tacas-mar-e-conjunto-de-2",
+        "slug": "tacas-mare-conjunto-de-2",
         "name": "Taças Maré — conjunto de 2",
         "category": "Mesa e cozinha",
         "description": "Duas taças de pequeno-almoço, uma azul e outra mostarda. Bordo arredondado e base compacta. Pratos e chávenas não incluídos.",
         "material": "Grés esmaltado",
-        "image": "images\/collection-8903303.jpg"
+        "image": "images/collection-8903303.jpg"
     },
     {
         "slug": "copo-textura",
@@ -453,7 +453,7 @@
         "category": "Mesa e cozinha",
         "description": "Copo sem asa em tom castanho, com superfície exterior texturada. Uma peça para água ou bebidas quentes. Prato e acessórios não incluídos.",
         "material": "Grés",
-        "image": "images\/collection-7260337.jpg"
+        "image": "images/collection-7260337.jpg"
     },
     {
         "slug": "pratos-alegria-conjunto-de-4",
@@ -461,7 +461,7 @@
         "category": "Mesa e cozinha",
         "description": "Quatro pratos rasos em cores diferentes, com bordo decorativo. Para uma mesa descontraída e cheia de cor. Taças não incluídas.",
         "material": "Cerâmica esmaltada",
-        "image": "images\/collection-9440473.jpg"
+        "image": "images/collection-9440473.jpg"
     },
     {
         "slug": "prato-lago",
@@ -469,7 +469,7 @@
         "category": "Mesa e cozinha",
         "description": "Prato raso de tom verde-água, com rebordo trabalhado. Vendido à unidade. Taça, prato rosa e restantes peças não incluídos.",
         "material": "Grés esmaltado",
-        "image": "images\/collection-3847482.jpg"
+        "image": "images/collection-3847482.jpg"
     },
     {
         "slug": "taca-veio",
@@ -477,6 +477,6 @@
         "category": "Mesa e cozinha",
         "description": "Taça de madeira em tom natural para servir fruta, pão ou frutos secos. Lavar à mão e secar de imediato. Pratos não incluídos.",
         "material": "Madeira",
-        "image": "images\/collection-8251821.jpg"
+        "image": "images/collection-8251821.jpg"
     }
 ]
