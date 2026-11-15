@@ -52,6 +52,15 @@ C:\xampp\php\php.exe server/worker.php
 
 O worker processa IA e email, regista heartbeat e não mantém bloqueios da base de dados durante chamadas externas. O site permanece disponível enquanto aguarda a OpenAI. Se parar, o pedido de IA é recusado com uma mensagem clara. Chamadas interrompidas ficam como falhadas e não são repetidas automaticamente.
 
+## Planeamento, descoberta e devoluções parciais
+
+- **Planeador de divisão:** disponível em `#planner` e a partir do detalhe de cada peça. Guarda até 20 projetos no armazenamento local do navegador, com medidas, orçamento e produtos selecionados. A vista superior estima ocupação com as medidas estruturadas; peças sem largura/profundidade usam uma área de referência e ficam assinaladas como estimativa. Os projetos não sincronizam entre dispositivos; podes copiar um link de leitura para partilhar uma planta, sem dados pessoais.
+- **Pesquisa por fotografia:** compara a cor média da imagem escolhida com as fotografias locais do catálogo e devolve as 12 peças mais próximas. É uma aproximação cromática local, não pesquisa semântica nem reconhecimento por IA. A imagem escolhida não é enviada ao servidor.
+- **Sustentabilidade e dimensões:** a administração pode guardar origem, materiais/certificações, disponibilidade de reparação e largura/profundidade/altura em centímetros. Estes dados só aparecem publicamente quando preenchidos; os valores de demonstração existentes não foram inferidos nem inventados.
+- **Devolução parcial:** o cliente seleciona linhas e quantidades da encomenda. A administração aprova/recusa e, ao concluir, repõe apenas as unidades selecionadas e regista o valor simulado correspondente. Continua a existir um único pedido de devolução por encomenda.
+- **Reservas de checkout:** encomendas por pagar expiram após 30 minutos. O worker cancela a encomenda, repõe stock e liberta o cupão; encomendas pagas não expiram. O worker tem de estar ativo para executar esta limpeza.
+- **Administração:** a listagem de encomendas usa pesquisa por número, cliente ou email, filtros por estado e paginação de 50 resultados. A exportação CSV continua a incluir o histórico completo.
+
 ## Regras e verificação
 
 - Notícias: publicação automática no instante agendado através do filtro de leitura, sem depender de cron. Rascunhos e agendamentos futuros não aparecem no site. Conflitos de versão devolvem 409. Até 100 revisões recentes são apresentadas; eliminar a notícia elimina as revisões associadas.

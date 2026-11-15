@@ -53,14 +53,18 @@ if(preg_match('~^/(admin/)?support/(\d+)$~D',$route,$m)) {
 }
 if(in_array($route,['/returns','/admin/returns'],true)) {
     $isAdmin=$route==='/admin/returns'; $actor=$isAdmin?admin():user();
-    if($method==='GET') { respond(query('SELECT r.*,u.name AS customer_name,o.total_cents FROM return_requests r JOIN users u ON u.id=r.user_id JOIN orders o ON o.id=r.order_id' . ($isAdmin?'':' WHERE r.user_id=?') . ' ORDER BY r.id DESC LIMIT 200',$isAdmin?[]:[$actor['id']])->fetchAll()); }
+    if($method==='GET') { $rows=query('SELECT r.*,u.name AS customer_name,o.total_cents,o.subtotal_cents,o.discount_cents FROM return_requests r JOIN users u ON u.id=r.user_id JOIN orders o ON o.id=r.order_id' . ($isAdmin?'':' WHERE r.user_id=?') . ' ORDER BY r.id DESC LIMIT 200',$isAdmin?[]:[$actor['id']])->fetchAll(); foreach($rows as &$row){$row['items']=query('SELECT ri.order_item_id,ri.quantity,ri.refunded_cents,oi.product_name,oi.variant_label,oi.image,oi.unit_price_cents,oi.product_id FROM return_request_items ri JOIN order_items oi ON oi.id=ri.order_item_id WHERE ri.return_request_id=? ORDER BY ri.order_item_id',[$row['id']])->fetchAll();$factor=(int)$row['subtotal_cents']>0?max(0,((int)$row['subtotal_cents']-(int)$row['discount_cents'])/(int)$row['subtotal_cents']):1;foreach($row['items'] as &$line)$line['refund_estimate_cents']=(int)round((int)$line['quantity']*(int)$line['unit_price_cents']*$factor);} respond($rows); }
     if($method==='POST' && !$isAdmin) {
-        $input=body(); $orderId=integer($input['order_id']??null,1,PHP_INT_MAX,'encomenda'); $reason=field($input,'reason',10,2000);
-        $id=transaction(function() use($actor,$orderId,$reason) {
+        $input=body(); $orderId=integer($input['order_id']??null,1,PHP_INT_MAX,'encomenda'); $reason=field($input,'reason',10,2000); $requested=$input['items']??[];
+        if(!is_array($requested)||count($requested)>100) { fail('Seleciona artigos válidos para devolver.',422); }
+        $id=transaction(function() use($actor,$orderId,$reason,$requested) {
             $order=query('SELECT * FROM orders WHERE id=? AND user_id=? FOR UPDATE',[$orderId,$actor['id']])->fetch(); if(!$order) { fail('Encomenda não encontrada.',404); }
             if($order['status']!=='delivered'||$order['payment_status']!=='paid') { fail('Só podes pedir a devolução de uma encomenda entregue e paga.',409); }
             if(query('SELECT id FROM return_requests WHERE order_id=?',[$orderId])->fetchColumn()) { fail('Já existe um pedido para esta encomenda.',409); }
             query("INSERT INTO return_requests (order_id,user_id,reason,admin_note) VALUES (?,?,?,'')",[$orderId,$actor['id'],$reason]); $id=(int)db()->lastInsertId();
+            $ordered=query('SELECT id,quantity FROM order_items WHERE order_id=? ORDER BY id',[$orderId])->fetchAll(); $available=[]; foreach($ordered as $item)$available[(int)$item['id']]=(int)$item['quantity'];
+            if(!$requested) $requested=array_map(static fn($item)=>['order_item_id'=>(int)$item['id'],'quantity'=>(int)$item['quantity']],$ordered);
+            $seen=[]; foreach($requested as $item){if(!is_array($item))fail('Artigo de devolução inválido.',422);$itemId=integer($item['order_item_id']??null,1,PHP_INT_MAX,'artigo');$quantity=integer($item['quantity']??null,1,100000,'quantidade');if(!isset($available[$itemId])||isset($seen[$itemId])||$quantity>$available[$itemId])fail('A quantidade excede os artigos desta encomenda.',422);$seen[$itemId]=true;query('INSERT INTO return_request_items (return_request_id,order_item_id,quantity) VALUES (?,?,?)',[$id,$itemId,$quantity]);}
             notifyAdmins('Pedido de devolução',"Encomenda #$orderId, pedido #$id."); activity('Devolução pedida',"Encomenda #$orderId"); return $id;
         }); respond(['id'=>$id],201);
     }
@@ -75,9 +79,11 @@ if(preg_match('~^/admin/returns/(\d+)$~D',$route,$m) && $method==='PATCH') {
         $allowed=['requested'=>['approved','rejected'],'approved'=>['completed'],'rejected'=>[],'completed'=>[]]; if(!in_array($state,$allowed[$r['status']],true)) { fail('Transição de devolução inválida.',409); }
         if($state==='completed') {
             $order=query('SELECT * FROM orders WHERE id=? FOR UPDATE',[$r['order_id']])->fetch(); if($order['payment_status']!=='paid') { fail('A encomenda já não tem um pagamento aprovado.',409); }
-            foreach(query('SELECT variant_id,quantity FROM order_items WHERE order_id=? ORDER BY product_id,variant_id',[$order['id']])->fetchAll() as $item) { stockChange((int)$item['variant_id'],(int)$item['quantity'],'Devolução — encomenda #'.$order['id'],(int)$order['id']); }
-            query("UPDATE orders SET payment_status='refunded' WHERE id=?",[$order['id']]); orderEvent((int)$order['id'],'refunded','Devolução concluída e reembolso simulado');
-            query("INSERT INTO payment_attempts (order_id,outcome,amount_cents,request_key) VALUES (?,'refunded',?,?)",[$order['id'],$order['total_cents'],substr(bin2hex(random_bytes(18)),0,36)]);
+            $factor=(int)$order['subtotal_cents']>0?max(0,((int)$order['subtotal_cents']-(int)$order['discount_cents'])/(int)$order['subtotal_cents']):1;
+            $refund=0; foreach(query('SELECT ri.order_item_id,ri.quantity,oi.variant_id,oi.product_id,oi.unit_price_cents FROM return_request_items ri JOIN order_items oi ON oi.id=ri.order_item_id WHERE ri.return_request_id=? ORDER BY oi.product_id,oi.variant_id',[$r['id']])->fetchAll() as $item) { stockChange((int)$item['variant_id'],(int)$item['quantity'],'Devolução parcial — encomenda #'.$order['id'],(int)$order['id']); $amount=(int)round((int)$item['quantity']*(int)$item['unit_price_cents']*$factor); $refund+=$amount; query('UPDATE return_request_items SET refunded_cents=? WHERE return_request_id=? AND order_item_id=?',[$amount,$r['id'],$item['order_item_id']]); }
+            $allReturned=(int)query('SELECT COALESCE(SUM(ri.quantity),0)= (SELECT COALESCE(SUM(quantity),0) FROM order_items WHERE order_id=?) FROM return_request_items ri WHERE ri.return_request_id=?',[$order['id'],$r['id']])->fetchColumn();
+            if($allReturned){query("UPDATE orders SET payment_status='refunded' WHERE id=?",[$order['id']]);orderEvent((int)$order['id'],'refunded','Todos os artigos devolvidos; reembolso simulado');}
+            query("INSERT INTO payment_attempts (order_id,outcome,amount_cents,request_key) VALUES (?,'refunded',?,?)",[$order['id'],$refund,substr(bin2hex(random_bytes(18)),0,36)]);
         }
         query('UPDATE return_requests SET status=?,admin_note=? WHERE id=?',[$state,$note,$r['id']]);
         $labels=['approved'=>'aprovada','rejected'=>'recusada','completed'=>'concluída (reembolso simulado)']; notifyUser((int)$r['user_id'],'Devolução atualizada',"Encomenda #{$r['order_id']}: {$labels[$state]}."); activity('Devolução atualizada',"Pedido #{$r['id']}: $state");

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 require __DIR__ . '/bootstrap.php';
+require __DIR__ . '/commerce.php';
 require __DIR__ . '/integrations.php';
 require __DIR__ . '/improvements.php';
 session_write_close();
@@ -10,6 +11,20 @@ if (!$lock || !flock($lock,LOCK_EX|LOCK_NB)) { exit; }
 do {
     touch(workerHeartbeat());
     query('DELETE FROM email_changes WHERE expires_at<UTC_TIMESTAMP()');
+    // Libertar stock/cupões de checkouts não pagos após 30 minutos.
+    foreach (query("SELECT id FROM orders WHERE status='pending' AND payment_status IN ('unpaid','pending','failed') AND reservation_expires_at<=UTC_TIMESTAMP() ORDER BY id LIMIT 20")->fetchAll(PDO::FETCH_COLUMN) as $expiredOrderId) {
+        try {
+            transaction(function () use ($expiredOrderId) {
+                $order=query('SELECT * FROM orders WHERE id=? FOR UPDATE',[$expiredOrderId])->fetch();
+                if (!$order || $order['status']!=='pending' || !in_array($order['payment_status'],['unpaid','pending','failed'],true) || !$order['reservation_expires_at'] || $order['reservation_expires_at']>gmdate('Y-m-d H:i:s')) return;
+                restoreOrder($order);
+                query("UPDATE orders SET status='cancelled',reservation_expires_at=NULL WHERE id=?",[$expiredOrderId]);
+                orderEvent((int)$expiredOrderId,'cancelled','Reserva expirada após 30 minutos sem pagamento');
+                notifyUser((int)$order['user_id'],'Reserva da encomenda expirada',"A encomenda #$expiredOrderId foi cancelada e o stock voltou a ficar disponível. Podes criar uma nova encomenda.");
+                activity('Reserva expirada',"Encomenda #$expiredOrderId cancelada após 30 minutos sem pagamento.");
+            });
+        } catch (Throwable $e) { error_log('Falha ao expirar reserva #' . $expiredOrderId . ': ' . $e->getMessage()); }
+    }
     foreach(query('SELECT id FROM support_attachments WHERE message_id IS NULL AND created_at<UTC_TIMESTAMP()-INTERVAL 1 DAY')->fetchAll(PDO::FETCH_COLUMN) as $attachmentId){
         if(preg_match('/^[a-f0-9]{32}$/D',$attachmentId)){$file=attachmentDirectory().'/'.$attachmentId;if(is_file($file))unlink($file);query('DELETE FROM support_attachments WHERE id=? AND message_id IS NULL',[$attachmentId]);}
     }

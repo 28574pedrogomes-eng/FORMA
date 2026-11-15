@@ -94,20 +94,36 @@ try {
     if ($route === '/categories' && $method === 'GET') {
         respond(query('SELECT c.*, (SELECT COUNT(*) FROM products p WHERE p.category_id = c.id AND p.active = 1) AS product_count FROM categories c ORDER BY c.id')->fetchAll());
     }
+    if ($route === '/catalog-facets' && $method === 'GET') {
+        respond([
+            'materials'=>query("SELECT DISTINCT v.material AS value FROM product_variants v JOIN products p ON p.id=v.product_id WHERE p.active=1 AND v.active=1 AND v.material<>'' ORDER BY value")->fetchAll(PDO::FETCH_COLUMN),
+            'colors'=>query("SELECT DISTINCT v.color AS value FROM product_variants v JOIN products p ON p.id=v.product_id WHERE p.active=1 AND v.active=1 AND v.color<>'' ORDER BY value")->fetchAll(PDO::FETCH_COLUMN),
+        ]);
+    }
     if ($route === '/products' && $method === 'GET') {
         $where = ['p.active = 1']; $params = [];
         $search = mb_substr(trim((string)($_GET['search'] ?? '')), 0, 100);
-        if ($search !== '') { $where[] = '(p.name LIKE ? OR p.description LIKE ? OR p.material LIKE ?)'; $pattern = '%' . $search . '%'; array_push($params, $pattern, $pattern, $pattern); }
+        if ($search !== '') { $where[] = '(p.name LIKE ? OR p.description LIKE ? OR p.material LIKE ? OR EXISTS(SELECT 1 FROM product_variants vs WHERE vs.product_id=p.id AND vs.active=1 AND (vs.color LIKE ? OR vs.material LIKE ? OR vs.size LIKE ?)))'; $pattern = '%' . $search . '%'; array_push($params, $pattern, $pattern, $pattern, $pattern, $pattern, $pattern); }
         if (!empty($_GET['category'])) { $where[] = 'p.category_id = ?'; $params[] = integer($_GET['category'], 1, PHP_INT_MAX, 'categoria'); }
         if (!empty($_GET['in_stock'])) { $where[] = 'p.stock > 0'; }
+        if (!empty($_GET['repairable'])) { $where[] = 'p.repairable = 1'; }
         if (isset($_GET['max_price']) && $_GET['max_price'] !== '') { $where[] = 'p.price_cents <= ?'; $params[] = integer($_GET['max_price'], 0, 100000000, 'preço máximo'); }
+        if (isset($_GET['min_price']) && $_GET['min_price'] !== '') { $where[] = 'p.price_cents >= ?'; $params[] = integer($_GET['min_price'], 0, 100000000, 'preço mínimo'); }
+        foreach (['max_width'=>'width_cm','max_depth'=>'depth_cm'] as $filter=>$column) if(isset($_GET[$filter]) && $_GET[$filter] !== '') { $where[]="p.$column IS NOT NULL AND p.$column<=?"; $params[]=integer($_GET[$filter],1,2000,$filter==='max_width'?'largura máxima':'profundidade máxima'); }
+        foreach (['material'=>'material','color'=>'cor'] as $filter=>$label) if (!empty($_GET[$filter])) {
+            $value=mb_substr(trim((string)$_GET[$filter]),0,100);
+            $productColumn=$filter==='material'?'p.material':"''";
+            $where[]="EXISTS(SELECT 1 FROM product_variants vf WHERE vf.product_id=p.id AND vf.active=1 AND (vf.$filter LIKE ? OR $productColumn LIKE ?))";
+            $params[]='%'.$value.'%'; $params[]='%'.$value.'%';
+        }
         $sort = ['featured' => 'p.featured DESC, p.id ASC', 'price_asc' => 'p.price_cents ASC, p.id ASC', 'price_desc' => 'p.price_cents DESC, p.id ASC', 'newest' => 'p.id DESC'][$_GET['sort'] ?? 'featured'] ?? 'p.id ASC';
         $page = integer($_GET['page'] ?? 1, 1, 100000, 'página');
+        $perPage = integer($_GET['per_page'] ?? 12, 1, 100, 'resultados por página');
         $sqlWhere = implode(' AND ', $where);
         $total = (int)query("SELECT COUNT(*) FROM products p WHERE $sqlWhere", $params)->fetchColumn();
-        $offset = ($page - 1) * 12;
-        $items = query("SELECT p.*,c.name AS category_name FROM products p JOIN categories c ON c.id = p.category_id WHERE $sqlWhere ORDER BY $sort LIMIT 12 OFFSET $offset", $params)->fetchAll();
-        respond(['items' => array_map('enrichProduct', $items), 'total' => $total, 'pages' => max(1, (int)ceil($total / 12)), 'page' => $page]);
+        $offset = ($page - 1) * $perPage;
+        $items = query("SELECT p.*,c.name AS category_name FROM products p JOIN categories c ON c.id = p.category_id WHERE $sqlWhere ORDER BY $sort LIMIT $perPage OFFSET $offset", $params)->fetchAll();
+        respond(['items' => array_map('enrichProduct', $items), 'total' => $total, 'pages' => max(1, (int)ceil($total / $perPage)), 'page' => $page]);
     }
     if (preg_match('~^/products/(\d+)$~', $route, $matches) && $method === 'GET') {
         $product = query('SELECT p.*,c.name AS category_name FROM products p JOIN categories c ON c.id = p.category_id WHERE p.id = ? AND p.active = 1', [$matches[1]])->fetch();
@@ -128,11 +144,23 @@ try {
 
     if (str_starts_with($route, '/admin/')) {
         $actor = admin();
+        if ($route === '/admin/orders' && $method === 'GET' && isset($_GET['page'])) {
+            $page=integer($_GET['page'],1,100000,'página'); $perPage=50; $where=[]; $params=[];
+            $term=mb_substr(trim((string)($_GET['search']??'')),0,100);
+            if($term!==''){$where[]='(CAST(o.id AS CHAR) LIKE ? OR o.shipping_name LIKE ? OR u.email LIKE ?)';$pattern='%'.$term.'%';array_push($params,$pattern,$pattern,$pattern);}
+            $filter=(string)($_GET['filter']??'');
+            if($filter==='pending-paid'){$where[]="o.status='pending' AND o.payment_status='paid'";}
+            elseif($filter==='unpaid'){$where[]="o.status='pending' AND o.payment_status IN ('pending','failed','unpaid')";}
+            elseif(in_array($filter,['pending','processing','shipped','delivered','cancelled'],true)){$where[]='o.status=?';$params[]=$filter;}
+            $sqlWhere=$where?' WHERE '.implode(' AND ',$where):''; $total=(int)query('SELECT COUNT(*) FROM orders o JOIN users u ON u.id=o.user_id'.$sqlWhere,$params)->fetchColumn();
+            $offset=($page-1)*$perPage; $rows=query('SELECT o.*,u.email FROM orders o JOIN users u ON u.id=o.user_id'.$sqlWhere.' ORDER BY o.id DESC LIMIT '.$perPage.' OFFSET '.$offset,$params)->fetchAll();
+            respond(['items'=>array_map('orderWithItems',$rows),'page'=>$page,'pages'=>max(1,(int)ceil($total/$perPage)),'total'=>$total]);
+        }
         if ($route === '/admin/products' && $method === 'GET') { respond(array_map('enrichProduct', query('SELECT p.*, c.name AS category_name FROM products p JOIN categories c ON p.category_id = c.id WHERE p.active = 1 ORDER BY p.id DESC')->fetchAll())); }
         if ($route === '/admin/products' && $method === 'POST') {
             $values = productFields(body());
             $id = transaction(function () use ($values) {
-                query('INSERT INTO products (category_id,name,description,price_cents,stock,image,badge,material,featured,dimensions) VALUES (?,?,?,?,?,?,?,?,?,?)', $values);
+                query('INSERT INTO products (category_id,name,description,price_cents,stock,image,badge,material,featured,dimensions,origin,sustainability,repairable,width_cm,depth_cm,height_cm) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', $values);
                 $id = (int)db()->lastInsertId(); addBaseVariant($id, $values); activity('Produto criado', "Produto #$id: {$values[1]}"); return $id;
             });
             respond(['id' => $id], 201);
@@ -145,7 +173,7 @@ try {
                 transaction(function () use ($values, $id) {
                     query('SELECT id FROM products WHERE id=? FOR UPDATE', [$id]);
                     $options = variants($id);
-                    query('UPDATE products SET category_id=?,name=?,description=?,image=?,badge=?,material=?,featured=?,dimensions=? WHERE id=?', [$values[0],$values[1],$values[2],$values[5],$values[6],$values[7],$values[8],$values[9],$id]);
+                    query('UPDATE products SET category_id=?,name=?,description=?,image=?,badge=?,material=?,featured=?,dimensions=?,origin=?,sustainability=?,repairable=?,width_cm=?,depth_cm=?,height_cm=? WHERE id=?', [$values[0],$values[1],$values[2],$values[5],$values[6],$values[7],$values[8],$values[9],$values[10],$values[11],$values[12],$values[13],$values[14],$values[15],$id]);
                     if (count($options) === 1) {
                         $option = $options[0];
                         query('UPDATE product_variants SET price_cents=?,image=?,material=? WHERE id=?', [$values[3],$values[5],$values[7],$option['id']]);

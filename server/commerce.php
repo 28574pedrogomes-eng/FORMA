@@ -89,10 +89,11 @@ function applyPayment(int $orderId, string $outcome, string $key): array {
     if (!preg_match('/^[a-f0-9-]{36}$/D', $key)) { fail('Identificador de pagamento inválido.', 422); }
     $order = query('SELECT * FROM orders WHERE id=? FOR UPDATE', [$orderId])->fetch();
     if (query('SELECT id FROM payment_attempts WHERE order_id=? AND request_key=?', [$orderId,$key])->fetchColumn()) { return $order; }
+    if (!empty($order['reservation_expires_at']) && strtotime($order['reservation_expires_at'] . ' UTC') <= time()) { fail('A reserva expirou. A encomenda será cancelada e o stock libertado.', 409); }
     if ($order['status'] !== 'pending' || in_array($order['payment_status'], ['paid','refunded'], true)) { fail('Esta encomenda já não aceita pagamentos.', 409); }
     $status = ['approved'=>'paid','refused'=>'failed','pending'=>'pending'][$outcome];
     query('INSERT INTO payment_attempts (order_id,outcome,amount_cents,request_key) VALUES (?,?,?,?)', [$orderId,$outcome,$order['total_cents'],$key]);
-    query('UPDATE orders SET payment_status=? WHERE id=?', [$status,$orderId]);
+    query('UPDATE orders SET payment_status=?,reservation_expires_at=IF(?=\'paid\',NULL,reservation_expires_at) WHERE id=?', [$status,$status,$orderId]);
     $labels = ['paid'=>'aprovado','failed'=>'recusado','pending'=>'pendente'];
     notifyUser((int)$order['user_id'], 'Pagamento de teste ' . $labels[$status], "Encomenda #$orderId. Não foi efetuada qualquer cobrança real.");
     activity('Pagamento simulado', "Encomenda #$orderId: $status");
@@ -107,7 +108,7 @@ function checkoutOrder(array $actor, array $data): array {
         $existing = query('SELECT * FROM orders WHERE user_id=? AND checkout_key=?', [$actor['id'],$key])->fetch();
         if ($existing) { return orderWithItems($existing); }
         $quote = quoteCart($data, true);
-        query("INSERT INTO orders (user_id,subtotal_cents,shipping_cents,total_cents,shipping_name,address,city,postal_code,phone,checkout_key,discount_cents,coupon_id,coupon_code,shipping_method,payment_status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,'unpaid')", [$actor['id'],$quote['subtotal_cents'],$quote['shipping_cents'],$quote['total_cents'],...$delivery,$key,$quote['discount_cents'],$quote['coupon_id'],$quote['coupon_code'],$quote['shipping_method']]);
+        query("INSERT INTO orders (user_id,subtotal_cents,shipping_cents,total_cents,shipping_name,address,city,postal_code,phone,checkout_key,discount_cents,coupon_id,coupon_code,shipping_method,payment_status,reservation_expires_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,'unpaid',DATE_ADD(UTC_TIMESTAMP(),INTERVAL 30 MINUTE))", [$actor['id'],$quote['subtotal_cents'],$quote['shipping_cents'],$quote['total_cents'],...$delivery,$key,$quote['discount_cents'],$quote['coupon_id'],$quote['coupon_code'],$quote['shipping_method']]);
         $id = (int)db()->lastInsertId();
         orderEvent($id,'pending','Encomenda registada');
         foreach ($quote['items'] as $item) {

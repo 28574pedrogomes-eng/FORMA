@@ -182,3 +182,12 @@ docs/                Modelo de dados, API e origem das imagens
 Consulta [o modelo de dados](docs/DATABASE.md), [a API](docs/API.md) e [as imagens](docs/ASSETS.md). Para parar o servidor iniciado pelo `.bat`, executa `powershell -File scripts/stop.ps1`. O MySQL continua ativo para outros projetos do XAMPP.
 
 Referências de implementação: [Tailwind com Vite](https://tailwindcss.com/docs/installation/using-vite) e [documentação do Vite](https://vite.dev/guide/).
+
+## Planeamento e melhorias recentes
+
+- **Planeador de divisão:** abre `#planner` ou escolhe **Ver esta peça no planeador** no detalhe de um produto. Define medidas e orçamento, compõe uma vista superior e guarda até 20 projetos neste navegador. Os projetos não sincronizam entre dispositivos; podes copiar um link de leitura para partilhar uma planta, sem dados pessoais. Para melhorar a escala da vista, preenche largura e profundidade nas fichas de produto.
+- **Pesquisa por fotografia:** na coleção, carrega uma imagem para encontrar produtos com cores médias semelhantes. A análise acontece no navegador e é aproximada; não identifica objetos ou estilos com IA.
+- **Atributos de sustentabilidade:** na administração, podes indicar origem, materiais/certificações e disponibilidade de reparação. Os dados são apresentados na ficha do produto quando estiverem preenchidos.
+- **Devoluções parciais:** o cliente escolhe linhas e quantidades. A administração repõe essas unidades ao concluir; o reembolso continua simulado.
+- **Reservas:** checkout não pago expira ao fim de 30 minutos e liberta stock e cupão quando o worker está ativo.
+- **Encomendas na administração:** pesquisa por número, cliente ou email, filtros por estado e paginação de 50 resultados.

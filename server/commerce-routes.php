@@ -60,9 +60,13 @@ if (preg_match('~^/restock/(\d+)$~',$route,$m) && $method==='DELETE') {
 }
 if ($route==='/checkout/quote' && $method==='POST') { user(); respond(quoteCart(body())); }
 if (preg_match('~^/products/(\d+)/related$~',$route,$m) && $method==='GET') {
-    $id=(int)$m[1]; $product=query('SELECT category_id,price_cents FROM products WHERE id=? AND active=1',[$id])->fetch();
+    $id=(int)$m[1]; $product=query('SELECT category_id,price_cents,material FROM products WHERE id=? AND active=1',[$id])->fetch();
     if (!$product) { fail('Produto não encontrado.',404); }
-    $items=query('SELECT p.*,c.name AS category_name FROM products p JOIN categories c ON c.id=p.category_id WHERE p.active=1 AND p.id<>? ORDER BY (p.category_id=?) DESC,p.featured DESC,ABS(p.price_cents-?) ASC,p.id LIMIT 4',[$id,$product['category_id'],$product['price_cents']])->fetchAll();
+    $items=query("SELECT p.*,c.name AS category_name,
+        (SELECT COUNT(*) FROM order_items a JOIN order_items b ON b.order_id=a.order_id WHERE a.product_id=? AND b.product_id=p.id) AS co_purchases
+        FROM products p JOIN categories c ON c.id=p.category_id WHERE p.active=1 AND p.id<>?
+        ORDER BY co_purchases DESC,(p.category_id=?) DESC,(p.material=? AND ?<>'') DESC,p.featured DESC,ABS(p.price_cents-?) ASC,p.id LIMIT 4",
+        [$id,$id,$product['category_id'],$product['material'],$product['material'],$product['price_cents']])->fetchAll();
     respond(array_map('enrichProduct',$items));
 }
 if (preg_match('~^/products/(\d+)/reviews$~',$route,$m)) {

@@ -10,6 +10,29 @@ function migrateExperience(PDO $db): void {
         $check = $db->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name=? AND column_name=?');
         $check->execute([$table, $column]); if (!$check->fetchColumn()) $db->exec("ALTER TABLE $table ADD COLUMN $column $definition");
     }
+    $deepColumns = [
+        'products' => [
+            'sustainability' => "VARCHAR(500) NOT NULL DEFAULT ''",
+            'origin' => "VARCHAR(120) NOT NULL DEFAULT ''",
+            'repairable' => 'TINYINT(1) NOT NULL DEFAULT 0',
+            'width_cm' => 'SMALLINT UNSIGNED NULL',
+            'depth_cm' => 'SMALLINT UNSIGNED NULL',
+            'height_cm' => 'SMALLINT UNSIGNED NULL',
+        ],
+        'orders' => ['reservation_expires_at' => 'DATETIME NULL'],
+    ];
+    foreach ($deepColumns as $table => $definitions) foreach ($definitions as $column => $definition) {
+        $check = $db->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name=? AND column_name=?');
+        $check->execute([$table, $column]); if (!$check->fetchColumn()) $db->exec("ALTER TABLE $table ADD COLUMN $column $definition");
+    }
+    $db->exec("UPDATE orders SET reservation_expires_at=DATE_ADD(created_at, INTERVAL 30 MINUTE) WHERE reservation_expires_at IS NULL AND status='pending' AND payment_status IN ('unpaid','pending','failed')");
+    $db->exec("CREATE TABLE IF NOT EXISTS return_request_items (
+        return_request_id BIGINT UNSIGNED NOT NULL, order_item_id BIGINT UNSIGNED NOT NULL,
+        quantity INT UNSIGNED NOT NULL, refunded_cents INT UNSIGNED NOT NULL DEFAULT 0,
+        PRIMARY KEY(return_request_id,order_item_id),
+        FOREIGN KEY(return_request_id) REFERENCES return_requests(id) ON DELETE CASCADE,
+        FOREIGN KEY(order_item_id) REFERENCES order_items(id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
     if ($db->query("SELECT version FROM schema_migrations WHERE version='experience-v1'")->fetchColumn()) return;
     $db->beginTransaction();
     try {

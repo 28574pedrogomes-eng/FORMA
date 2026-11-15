@@ -19,7 +19,8 @@ Entrada: `public/api/index.php?route=/...`. Pedidos e respostas usam JSON, excet
 | POST | `/auth/forgot` | Pedir link de recuperação |
 | POST | `/auth/reset` | Consumir token e alterar palavra-passe |
 | GET | `/categories` | Categorias e contagem de produtos ativos |
-| GET | `/products` | Catálogo filtrado e paginado |
+| GET | `/catalog-facets` | Valores de materiais e cores para filtros |
+| GET | `/products` | Catálogo filtrado e paginado; `per_page` opcional até 100 |
 | GET | `/products/{id}` | Detalhes de produto ativo |
 | GET | `/orders` | Encomendas do utilizador autenticado |
 | POST | `/orders` | Criar encomenda, calcular total e atualizar stock |
@@ -98,7 +99,7 @@ Erros devolvem `{ "error": "Mensagem em português" }`. Códigos principais: 401
 | `/support` | GET, POST | Cliente; lista própria e novo pedido `{subject,content}` |
 | `/support/{id}` | GET, POST, PATCH | Proprietário; conversa, mensagem `{content}`, estado `{status:open/closed}` |
 | `/admin/support`, `/admin/support/{id}` | GET; GET, POST, PATCH | Administrador; todos os pedidos e respostas |
-| `/returns` | GET, POST | Cliente; lista própria ou `{order_id,reason}` |
+| `/returns` | GET, POST | Cliente; lista própria ou `{order_id,reason,items:[{order_item_id,quantity}]}`; `items` omitido devolve todas as linhas |
 | `/admin/returns`, `/admin/returns/{id}` | GET; PATCH | Administrador; `{status,admin_note,confirm:true}` |
 | `/bundles` | GET | Público; itens, total atual e disponibilidade |
 | `/admin/bundles`, `/admin/bundles/{id}` | GET, POST; PUT, DELETE | Administrador; campos `name,description,image,active,items:[{variant_id,quantity}]`; eliminar exige `confirm:true` |

@@ -119,7 +119,8 @@ function productFields(array $data): array {
     if (!query('SELECT id FROM categories WHERE id = ?', [$category])->fetchColumn()) { fail('Seleciona uma categoria existente.', 422); }
     $image = field($data, 'image', 1, 500);
     if (!preg_match('~^(images/[a-z0-9-]+\.(jpg|png|webp)|uploads/[a-f0-9]{32}\.(jpg|png|webp))$~D', $image) || !is_file(__DIR__ . '/../public/' . $image)) { fail('Carrega uma fotografia válida.', 422); }
-    return [$category, field($data, 'name', 2, 120), field($data, 'description', 10, 5000), integer($data['price_cents'] ?? null, 1, 100000000, 'preço'), integer($data['stock'] ?? null, 0, 100000, 'stock'), $image, field($data, 'badge', 0, 30), field($data, 'material', 0, 100), !empty($data['featured']) ? 1 : 0, field($data + ['dimensions'=>''], 'dimensions', 0, 120)];
+    $dimension = static fn(string $key): ?int => empty($data[$key]) ? null : integer($data[$key],1,2000,$key);
+    return [$category, field($data, 'name', 2, 120), field($data, 'description', 10, 5000), integer($data['price_cents'] ?? null, 1, 100000000, 'preço'), integer($data['stock'] ?? null, 0, 100000, 'stock'), $image, field($data, 'badge', 0, 30), field($data, 'material', 0, 100), !empty($data['featured']) ? 1 : 0, field($data + ['dimensions'=>''], 'dimensions', 0, 120), field($data + ['origin'=>''], 'origin', 0, 120), field($data + ['sustainability'=>''], 'sustainability', 0, 500), !empty($data['repairable']) ? 1 : 0, $dimension('width_cm'), $dimension('depth_cm'), $dimension('height_cm')];
 }
 function orderWithItems(array $order): array {
     $order['items'] = query('SELECT * FROM order_items WHERE order_id = ?', [$order['id']])->fetchAll();
