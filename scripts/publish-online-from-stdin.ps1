@@ -6,7 +6,10 @@ if([string]::IsNullOrWhiteSpace($password)){throw 'Palavra-passe vazia.'}
 $root=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $winscpDir=Join-Path $root 'output\WinSCP-Portable'
 [void][Reflection.Assembly]::LoadFrom((Join-Path $winscpDir 'net40\WinSCPnet.dll'))
-$stage=Join-Path 'C:\' ('fp'+[Guid]::NewGuid().ToString('N').Substring(0,8))
+$tempRoot=[IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\')+'\'
+$stage=Join-Path $tempRoot ('forma-publish-'+[Guid]::NewGuid().ToString('N'))
+$stageFull=[IO.Path]::GetFullPath($stage)
+if(!$stageFull.StartsWith($tempRoot,[StringComparison]::OrdinalIgnoreCase)){throw 'Pasta temporária de publicação inválida.'}
 $session=$null
 try{
   [void](New-Item -ItemType Directory -Path $stage)
@@ -30,4 +33,4 @@ try{
   if(!$session.FileExists('/htdocs/index.php') -or !$session.FileExists('/htdocs/public/build/index.html')){throw 'Ficheiros de entrada não confirmados no servidor.'}
   [Console]::Out.WriteLine((@{ok=$true;transferred=@($sync.Transfers).Count;verified=$true}|ConvertTo-Json -Compress))
 }catch{[Console]::Out.WriteLine((@{ok=$false;error=$_.Exception.Message}|ConvertTo-Json -Compress));exit 1}
-finally{if($session){$session.Dispose()};$password=$null;if(Test-Path $stage){Remove-Item -LiteralPath $stage -Recurse -Force}}
+finally{if($session){$session.Dispose()};$password=$null;if(Test-Path -LiteralPath $stage){$resolvedStage=[IO.Path]::GetFullPath((Resolve-Path -LiteralPath $stage).Path);if($resolvedStage.StartsWith($tempRoot,[StringComparison]::OrdinalIgnoreCase)){Remove-Item -LiteralPath $resolvedStage -Recurse -Force}}}
