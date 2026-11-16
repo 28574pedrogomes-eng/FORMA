@@ -9,19 +9,20 @@ import { Button, Empty, ErrorNotice, Loading, Modal } from './ui';
 export function ProductDetail({ product, onClose }) {
   const { addToCart, favorites, toggleFavorite, user, setAuthMode, notify } = useStore();
   const [id, setId] = useState(product.id); const [fresh, setFresh] = useState(null); const [selected, setSelected] = useState('');
-  const [related, setRelated] = useState([]); const [error, setError] = useState(''); const [watching, setWatching] = useState(false);
+  const [related, setRelated] = useState([]); const [error, setError] = useState(''); const [watching, setWatching] = useState(false), [retry, setRetry] = useState(0);
   useEffect(() => {
-    const controller = new AbortController(); setFresh(null); setError('');
-    Promise.all([api(`/products/${id}`, { signal: controller.signal }), api(`/products/${id}/related`, { signal: controller.signal })]).then(([p, suggestions]) => { setFresh(p); setSelected(String(p.variants[0]?.id || '')); setRelated(suggestions); }).catch(e => { if (e.name !== 'AbortError') setError(e.message); });
+    const controller = new AbortController(); setFresh(null); setRelated([]); setError('');
+    api(`/products/${id}`, { signal: controller.signal }).then(productData => { setFresh(productData); setSelected(String(productData.variants[0]?.id || '')); }).catch(e => { if (e.name !== 'AbortError') setError(e.message); });
+    api(`/products/${id}/related`, { signal: controller.signal }).then(suggestions => { setRelated(suggestions); }).catch(() => { if (!controller.signal.aborted) setRelated([]); });
     return () => controller.abort();
-  }, [id]);
+  }, [id, retry]);
   const variant = fresh?.variants.find(v => String(v.id) === selected);
   async function watch() {
     if (!user) { onClose(); setAuthMode('login'); notify('Entra na tua conta para pedir um aviso de reposição.'); return; }
     setWatching(true);
     try { const result = await api('/restock', { method: 'POST', data: { variant_id: variant.id } }); notify(result.message); } catch (e) { setError(e.message); } finally { setWatching(false); }
   }
-  return <Modal title="Um olhar mais próximo" wide onClose={onClose} className="product-details-modal"><ErrorNotice message={error} />{!fresh ? !error && <Loading /> : <>
+  return <Modal title="Um olhar mais próximo" wide onClose={onClose} className="product-details-modal"><ErrorNotice message={error} retry={() => setRetry(value => value + 1)} />{!fresh ? !error && <Loading /> : <>
     <div className="product-detail"><ProductGallery product={fresh} variant={variant}/><div className="detail-copy"><span className="eyebrow">{fresh.category_name} / COLEÇÃO ESSENCIAL</span><h3>{fresh.name}</h3><span className="detail-price">{money(variant?.price_cents ?? fresh.price_cents)}</span>{fresh.review_count > 0 && <div className="product-rating"><Star size={15} fill="currentColor" />{fresh.rating} <span>({fresh.review_count} avaliações)</span></div>}<p className="detail-description">{fresh.description}</p><CompareButton product={fresh}/>
       {fresh.variants.length > 1 && <div className="variant-selector"><span>Escolhe a tua opção</span><div>{fresh.variants.map(v => <button key={v.id} className={selected === String(v.id) ? 'selected' : ''} aria-pressed={selected === String(v.id)} onClick={() => { setSelected(String(v.id)); setError(''); }}><b>{v.label}</b><small>{[v.color, v.size].filter(Boolean).join(' · ') || v.material}</small><span>{money(v.price_cents)}{!Number(v.stock) && ' · Esgotado'}</span></button>)}</div></div>}
       <div className="detail-property"><span>Material</span><b>{variant?.material || fresh.material || '—'}</b></div>{fresh.dimensions && <div className="detail-property"><span>Dimensões</span><b>{fresh.dimensions}</b></div>}{fresh.origin&&<div className="detail-property"><span>Origem</span><b>{fresh.origin}</b></div>}{fresh.sustainability&&<div className="detail-property"><span>Materiais e certificações</span><b>{fresh.sustainability}</b></div>}{Number(fresh.repairable)===1&&<div className="detail-property"><span>Reparação</span><b>Serviço de reparação disponível</b></div>}<div className="detail-property"><span>Disponibilidade</span><b>{Number(variant?.stock) > 0 ? `${variant.stock} unidades em stock` : 'Temporariamente esgotado'}</b></div><button className="plan-detail" onClick={()=>{localStorage.setItem('forma_planner_pending',String(fresh.id));window.dispatchEvent(new Event('forma:planner-add'));onClose();location.hash='planner';}}><Ruler size={16}/>Ver esta peça no planeador de divisão</button>
