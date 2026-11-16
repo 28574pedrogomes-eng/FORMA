@@ -27,6 +27,8 @@ body:has(.planner-editor){overflow:hidden;background:#eaf0f2}body:has(.planner-e
 .room-plan-stack-mark circle{fill:#344b38;stroke:#fffdf8;stroke-width:1.5;vector-effect:non-scaling-stroke}
 .room-plan-stack-mark text{fill:#fff;font:700 11px Arial,sans-serif;stroke:none}
 .planner-stack-context{color:#536c53!important;font-weight:600}
+.planner-cloth-hint{position:absolute;z-index:11;left:50%;top:68px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px);padding:9px 13px;border:1px solid #ffffff;border-radius:20px;background:#ffffffdf;color:#455449;box-shadow:0 4px 14px #34453712;font-size:11px;font-weight:600;pointer-events:none;white-space:nowrap}
+.planner-cloth-hint svg{flex:none;color:#56725a}
 .room-plan-label{fill:#374238;font:600 11px 'DM Sans',Arial,sans-serif;paint-order:stroke;stroke:#f4f3ed;stroke-width:2px;stroke-linejoin:round}
 .room-plan-dimension{fill:#536456;font:600 13px 'DM Sans',Arial,sans-serif;letter-spacing:.02em}
 .room-plan-key{position:absolute;right:18px;bottom:18px;display:flex;align-items:center;gap:15px;padding:9px 12px;border:1px solid #e0e6df;border-radius:7px;background:#ffffffed;box-shadow:0 4px 14px #25372b12;color:#5e695f;font-size:10px;font-weight:600}
@@ -47,3 +49,4 @@ body:has(.planner-editor){overflow:hidden;background:#eaf0f2}body:has(.planner-e
 .planner-measure-stepper input[type=number]{-moz-appearance:textfield}
 .planner-measure-control>small{color:#838c84;font-size:9px;line-height:1.4}
 @media(max-width:760px){.room-plan-viewport{bottom:calc(min(39vh,330px) + 43px)}.room-plan-dimension-width{display:none}.room-plan-key{right:11px;bottom:8px;font-size:9px;padding:7px 9px}.planner-stage-overlap{bottom:calc(min(39vh,330px) + 56px);max-width:calc(100% - 110px);font-size:9px;white-space:normal;text-align:center}.planner-measure-stepper{height:40px;grid-template-columns:30px minmax(0,1fr) 30px}.planner-measure-stepper input{font-size:13px}.planner-measure-control>small{font-size:8px}}
+@media(max-width:760px){.planner-cloth-hint{top:47px;left:10px;transform:none;max-width:calc(100% - 20px);padding:7px 10px;font-size:9px}.planner-cloth-hint svg{width:13px;height:13px}}

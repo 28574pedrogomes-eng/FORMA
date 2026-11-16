@@ -61,6 +61,7 @@ const dimensions = product => {
   return { width, depth, height, kind };
 };
 const productSlug = name => norm(name).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const isSoftBlanket = product => kindOf(product) === 'textile' && /manta|colcha|edredao|cobertor|coberta|blanket/.test(norm(product?.name || ''));
 function loadProductModel(product) {
   const url = new URL(`models/${productSlug(product.name)}.glb`, document.baseURI).href;
   if (!productModelCache.has(url)) productModelCache.set(url, productModelLoader.loadAsync(url).catch(error => { productModelCache.delete(url); throw error; }));
@@ -82,6 +83,96 @@ function loadProductModel(product) {
     return model;
   });
 }
+
+function buildBlanketModel(product, savedState) {
+  const { width, depth, height } = dimensions(product), w = width / 100, d = depth / 100;
+  const columns = 27, rows = 33, count = columns * rows, positions = new Float32Array(count * 3), previous = new Float32Array(count * 3), uv = new Float32Array(count * 2), indices = [];
+  const states = savedState?.positions?.length === positions.length && savedState?.previous?.length === previous.length;
+  for (let row = 0; row < rows; row += 1) for (let col = 0; col < columns; col += 1) {
+    const i = row * columns + col, u = col / (columns - 1), v = row / (rows - 1), p = i * 3;
+    positions[p] = (u - .5) * w;
+    positions[p + 1] = .052 + .018 * Math.sin(u * Math.PI * 8 + v * 5) * Math.sin(v * Math.PI * 2);
+    positions[p + 2] = (v - .5) * d;
+    uv[i * 2] = u; uv[i * 2 + 1] = 1 - v;
+    if (col < columns - 1 && row < rows - 1) {
+      const a = i, b = i + columns;
+      indices.push(a, b, b + 1, a, b + 1, a + 1);
+    }
+  }
+  if (states) { positions.set(savedState.positions); previous.set(savedState.previous); }
+  else previous.set(positions);
+  const constraints = [];
+  const link = (a, b, stiffness) => {
+    const ax = positions[a * 3], ay = positions[a * 3 + 1], az = positions[a * 3 + 2];
+    const bx = positions[b * 3], by = positions[b * 3 + 1], bz = positions[b * 3 + 2];
+    constraints.push([a, b, Math.hypot(bx - ax, by - ay, bz - az), stiffness]);
+  };
+  for (let row = 0; row < rows; row += 1) for (let col = 0; col < columns; col += 1) {
+    const i = row * columns + col;
+    if (col < columns - 1) link(i, i + 1, .92);
+    if (row < rows - 1) link(i, i + columns, .92);
+    if (col < columns - 1 && row < rows - 1) { link(i, i + columns + 1, .55); link(i + 1, i + columns, .55); }
+    if (col < columns - 2) link(i, i + 2, .24);
+    if (row < rows - 2) link(i, i + columns * 2, .24);
+  }
+  const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 512;
+  const ctx = canvas.getContext('2d'), tones = ['#b8ad9c', '#8e998b', '#ad8979', '#9a8d7f'];
+  const tone = tones[Math.abs(Number(product.id) || 0) % tones.length];
+  ctx.fillStyle = tone; ctx.fillRect(0, 0, 512, 512);
+  for (let i = 0; i < 32; i += 1) { ctx.strokeStyle = i % 4 === 0 ? 'rgba(255,255,255,.11)' : 'rgba(39,43,37,.035)'; ctx.lineWidth = i % 4 === 0 ? 2 : 1; ctx.beginPath(); ctx.moveTo(0, i * 16); ctx.lineTo(512, i * 16 + 5); ctx.stroke(); ctx.beginPath(); ctx.moveTo(i * 16, 0); ctx.lineTo(i * 16 + 3, 512); ctx.stroke(); }
+  const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+  const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3)); geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); geometry.setIndex(indices); geometry.computeVertexNormals();
+  const material = new THREE.MeshStandardMaterial({ map: texture, roughness: .96, side: THREE.DoubleSide });
+  const cloth = new THREE.Mesh(geometry, material); cloth.name = 'Manta dinâmica'; cloth.castShadow = true; cloth.receiveShadow = true;
+  const hemMaterial = new THREE.MeshStandardMaterial({ color: '#756b5f', roughness: .9 });
+  const hem = new THREE.Group(), hemLines = [];
+  for (const edge of [-1, 1]) {
+    const points = [];
+    for (let col = 0; col < columns; col += 1) { const p = (edge < 0 ? col : (rows - 1) * columns + col) * 3; points.push(new THREE.Vector3(positions[p], positions[p + 1] + .003, positions[p + 2])); }
+    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: '#766d61' })); line.raycast = () => {}; hem.add(line); hemLines.push(line);
+  }
+  const group = new THREE.Group(); group.add(cloth, hem);
+  cloth.userData.clothSurface = true;
+  group.userData.clothSim = { columns, rows, positions, previous, constraints, hemLines, grabbedIndex: -1, grabTarget: new THREE.Vector3(), geometry, mesh: cloth };
+  group.userData.productId = Number(product.id); group.userData.width = w; group.userData.depth = d; group.userData.height = height / 100; group.userData.supportHeight = supportHeight(product) / 100; group.userData.kind = 'textile'; group.userData.productName = product.name;
+  group.traverse(object => { if (object.isMesh || object.isLine) object.userData.productId = Number(product.id); });
+  return group;
+}
+
+function stepCloth(sim, dt) {
+  const { positions: p, previous: old, constraints, grabbedIndex, grabTarget, columns, rows } = sim;
+  const dt2 = dt * dt, damping = .992;
+  for (let i = 0; i < columns * rows; i += 1) {
+    const j = i * 3;
+    if (i === grabbedIndex) { p[j] = grabTarget.x; p[j + 1] = grabTarget.y; p[j + 2] = grabTarget.z; old[j] = p[j]; old[j + 1] = p[j + 1]; old[j + 2] = p[j + 2]; continue; }
+    const x = p[j], y = p[j + 1], z = p[j + 2];
+    p[j] += (x - old[j]) * damping;
+    p[j + 1] += (y - old[j + 1]) * damping - 9.81 * dt2;
+    p[j + 2] += (z - old[j + 2]) * damping;
+    old[j] = x; old[j + 1] = y; old[j + 2] = z;
+    const floorY = sim.floorY ?? .028;
+    if (p[j + 1] < floorY) { p[j + 1] = floorY; old[j + 1] = p[j + 1] + Math.max(0, old[j + 1] - y) * .08; }
+  }
+  for (let pass = 0; pass < 5; pass += 1) {
+    for (const [a, b, rest, stiffness] of constraints) {
+      const ai = a * 3, bi = b * 3, dx = p[bi] - p[ai], dy = p[bi + 1] - p[ai + 1], dz = p[bi + 2] - p[ai + 2];
+      const distance = Math.hypot(dx, dy, dz) || .0001, correction = (distance - rest) / distance * stiffness;
+      const aPinned = a === grabbedIndex, bPinned = b === grabbedIndex;
+      if (!aPinned && !bPinned) { p[ai] += dx * correction * .5; p[ai + 1] += dy * correction * .5; p[ai + 2] += dz * correction * .5; p[bi] -= dx * correction * .5; p[bi + 1] -= dy * correction * .5; p[bi + 2] -= dz * correction * .5; }
+      else if (aPinned) { p[bi] -= dx * correction; p[bi + 1] -= dy * correction; p[bi + 2] -= dz * correction; }
+      else { p[ai] += dx * correction; p[ai + 1] += dy * correction; p[ai + 2] += dz * correction; }
+    }
+    for (let i = 0; i < columns * rows; i += 1) { const j = i * 3; if (i !== grabbedIndex && p[j + 1] < (sim.floorY ?? .028)) p[j + 1] = sim.floorY ?? .028; }
+  }
+  sim.geometry.attributes.position.needsUpdate = true; sim.geometry.computeVertexNormals();
+  sim.hemLines?.forEach((line, edgeIndex) => {
+    const attribute = line.geometry.attributes.position, row = edgeIndex === 0 ? 0 : rows - 1;
+    for (let col = 0; col < columns; col += 1) { const source = (row * columns + col) * 3; attribute.setXYZ(col, p[source], p[source + 1] + .003, p[source + 2]); }
+    attribute.needsUpdate = true; line.geometry.computeBoundingSphere();
+  });
+}
+
+function snapshotCloth(sim) { return { positions: Array.from(sim.positions), previous: Array.from(sim.previous) }; }
 function setModelSelection(group, instanceId, selectedId) {
   group.traverse(object => {
     if (!object.isMesh || !object.material?.emissive) return;
@@ -235,8 +326,9 @@ function addRoom(scene, widthCm, depthCm) {
 }
 
 function RoomViewport({ width, depth, products, items, selectedId, onSelect, onMove, mode, zoom, onZoom }) {
-  const mountRef = useRef(null), sceneRef = useRef(null), cameraRef = useRef(null), rendererRef = useRef(null), controlsRef = useRef(null), groupsRef = useRef(new Map()), dragRef = useRef(null), propsRef = useRef({});
+  const mountRef = useRef(null), sceneRef = useRef(null), cameraRef = useRef(null), rendererRef = useRef(null), controlsRef = useRef(null), groupsRef = useRef(new Map()), clothStatesRef = useRef(new Map()), dragRef = useRef(null), propsRef = useRef({});
   propsRef.current = { items, products, selectedId, onSelect, onMove, width, depth, mode, onZoom };
+  const rememberCloth = () => { for (const [id, group] of groupsRef.current) if (group.userData.clothSim) clothStatesRef.current.set(id, snapshotCloth(group.userData.clothSim)); };
 
   useEffect(() => {
     if (mode === '2d') return undefined;
@@ -259,8 +351,8 @@ function RoomViewport({ width, depth, products, items, selectedId, onSelect, onM
       controls = new OrbitControls(camera, renderer.domElement); controls.target.set(0, mode === '2d' ? 0 : .95, 0); controls.enableDamping = true; controls.dampingFactor = .07; controls.enableRotate = mode === '3d'; controls.enablePan = true; controls.minDistance = 2.8; controls.maxDistance = 18; controls.maxPolarAngle = mode === '2d' ? .001 : Math.PI * .47; controls.minPolarAngle = mode === '2d' ? .001 : .16; controlsRef.current = controls;
       const resize = () => { if (!mount.clientWidth || !mount.clientHeight) return; renderer.setSize(mount.clientWidth, mount.clientHeight); camera.aspect = mount.clientWidth / mount.clientHeight; if (camera.isOrthographicCamera) { const aspect = camera.aspect, size = Math.max(roomSize.width, roomSize.depth) * 1.20; camera.left = -size * aspect / 2; camera.right = size * aspect / 2; camera.top = size / 2; camera.bottom = -size / 2; } camera.updateProjectionMatrix(); };
       const observer = new ResizeObserver(resize); observer.observe(mount);
-      const animate = () => { frame = requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }; animate();
-      const pointer = new THREE.Vector2(), ray = new THREE.Raycaster(), floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit = new THREE.Vector3();
+      const animate = () => { frame = requestAnimationFrame(animate); controls.update(); for (const group of groupsRef.current.values()) if (group.userData.clothSim) { stepCloth(group.userData.clothSim, 1 / 60); stepCloth(group.userData.clothSim, 1 / 60); } renderer.render(scene, camera); }; animate();
+      const pointer = new THREE.Vector2(), ray = new THREE.Raycaster(), floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit = new THREE.Vector3(); ray.params.Line.threshold = .01;
       const coords = event => { const rect = renderer.domElement.getBoundingClientRect(); pointer.set(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1); ray.setFromCamera(pointer, camera); };
       const down = event => {
         if (event.button !== 0) return; coords(event);
@@ -268,14 +360,25 @@ function RoomViewport({ width, depth, products, items, selectedId, onSelect, onM
         if (!intersections.length) { propsRef.current.onSelect(null); return; }
         const hitId = intersections[0].object.userData.instanceId; const hitItem = propsRef.current.items.find(item => item.uid === hitId); const selectedItem = propsRef.current.items.find(item => item.uid === propsRef.current.selectedId); const instanceId = selectedItem && hitItem?.supportUid === selectedItem.uid ? selectedItem.uid : hitId; const group = groupsRef.current.get(instanceId); const productId = group?.userData.productId; const product = propsRef.current.products.find(p => Number(p.id) === Number(productId));
         if (!group || !product) return; propsRef.current.onSelect(instanceId);
-        if (!ray.ray.intersectPlane(floorPlane, hit)) return;
-        controls.enabled = false; dragRef.current = { instanceId, productId: Number(productId), group, offsetX: group.position.x - hit.x, offsetZ: group.position.z - hit.z, startX: event.clientX, startY: event.clientY, moved: false }; renderer.domElement.setPointerCapture?.(event.pointerId); event.preventDefault();
+        controls.enabled = false;
+        const cloth = group.userData.clothSim; let clothIndex = -1;
+        let grabPlaneY = Number(group.position.y) || 0;
+        if (cloth && intersections[0].object.userData.clothSurface) {
+          const localHit = group.worldToLocal(intersections[0].point.clone()); let nearest = Infinity;
+          for (let i = 0; i < cloth.columns * cloth.rows; i += 1) { const j = i * 3, distance = (cloth.positions[j] - localHit.x) ** 2 + (cloth.positions[j + 1] - localHit.y) ** 2 + (cloth.positions[j + 2] - localHit.z) ** 2; if (distance < nearest) { nearest = distance; clothIndex = i; } }
+          if (clothIndex >= 0) { const j = clothIndex * 3; cloth.grabbedIndex = clothIndex; cloth.grabTarget.set(cloth.positions[j], cloth.positions[j + 1], cloth.positions[j + 2]); grabPlaneY += cloth.positions[j + 1]; }
+        }
+        const grabPlane = clothIndex >= 0 ? new THREE.Plane(new THREE.Vector3(0, 1, 0), -grabPlaneY) : floorPlane;
+        if (!ray.ray.intersectPlane(grabPlane, hit)) { if (clothIndex >= 0) cloth.grabbedIndex = -1; controls.enabled = true; return; }
+        const screenRight = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0); screenRight.y = 0; screenRight.normalize();
+        const horizontalWorldPerPixel = camera.isPerspectiveCamera ? 2 * camera.position.distanceTo(controls.target) * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) / renderer.domElement.clientHeight : (camera.top - camera.bottom) / renderer.domElement.clientHeight;
+        dragRef.current = { instanceId, productId: Number(productId), group, cloth, clothIndex, clothStartY: clothIndex >= 0 ? cloth.positions[clothIndex * 3 + 1] : 0, grabPlaneY, screenRight, horizontalWorldPerPixel, startGroupX: group.position.x, startGroupZ: group.position.z, offsetX: group.position.x - hit.x, offsetZ: group.position.z - hit.z, startX: event.clientX, startY: event.clientY, moved: false }; renderer.domElement.setPointerCapture?.(event.pointerId); event.preventDefault();
       };
-      const move = event => { const drag = dragRef.current; if (!drag) return; coords(event); if (!ray.ray.intersectPlane(floorPlane, hit)) return; const d = dimensions(propsRef.current.products.find(p => Number(p.id) === drag.productId)); const roomW = Number(propsRef.current.width) / 100, roomD = Number(propsRef.current.depth) / 100; const rotated = ((propsRef.current.items.find(item => item.uid === drag.instanceId)?.rotation || 0) % 180) !== 0; const fw = (rotated ? d.depth : d.width) / 100, fd = (rotated ? d.width : d.depth) / 100; const x = THREE.MathUtils.clamp(hit.x + drag.offsetX, -roomW / 2 + fw / 2, roomW / 2 - fw / 2), z = THREE.MathUtils.clamp(hit.z + drag.offsetZ, -roomD / 2 + fd / 2, roomD / 2 - fd / 2); drag.group.position.x = x; drag.group.position.z = z; const item = propsRef.current.items.find(row => row.uid === drag.instanceId); const support = item && findSupport(item, Math.round((x + roomW / 2) * 100), Math.round((z + roomD / 2) * 100), propsRef.current.items, propsRef.current.products); drag.group.position.y = support ? supportHeight(propsRef.current.products.find(p => Number(p.id) === Number(support.productId))) / 100 : 0; drag.supportUid = support?.uid || null; drag.elevation = support ? supportHeight(propsRef.current.products.find(p => Number(p.id) === Number(support.productId))) : 0; drag.moved ||= Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 4; };
-      const up = () => { const drag = dragRef.current; if (!drag) return; dragRef.current = null; controls.enabled = true; if (drag.moved) propsRef.current.onMove(drag.instanceId, Math.round((drag.group.position.x + Number(propsRef.current.width) / 200) * 100), Math.round((drag.group.position.z + Number(propsRef.current.depth) / 200) * 100), drag.elevation || 0, drag.supportUid || null); };
+      const move = event => { const drag = dragRef.current; if (!drag) return; coords(event); const lift = drag.clothIndex >= 0 ? Math.max(-.02, (drag.startY - event.clientY) * .009) : 0; if (drag.clothIndex < 0 && !ray.ray.intersectPlane(floorPlane, hit)) return; const d = dimensions(propsRef.current.products.find(p => Number(p.id) === drag.productId)); const roomW = Number(propsRef.current.width) / 100, roomD = Number(propsRef.current.depth) / 100; const rotated = ((propsRef.current.items.find(item => item.uid === drag.instanceId)?.rotation || 0) % 180) !== 0; const fw = (rotated ? d.depth : d.width) / 100, fd = (rotated ? d.width : d.depth) / 100; const dx = event.clientX - drag.startX; const desiredX = drag.clothIndex >= 0 ? drag.startGroupX + dx * drag.horizontalWorldPerPixel * drag.screenRight.x : hit.x + drag.offsetX; const desiredZ = drag.clothIndex >= 0 ? drag.startGroupZ + dx * drag.horizontalWorldPerPixel * drag.screenRight.z : hit.z + drag.offsetZ; const x = THREE.MathUtils.clamp(desiredX, -roomW / 2 + fw / 2, roomW / 2 - fw / 2), z = THREE.MathUtils.clamp(desiredZ, -roomD / 2 + fd / 2, roomD / 2 - fd / 2); drag.group.position.x = x; drag.group.position.z = z; const item = propsRef.current.items.find(row => row.uid === drag.instanceId); const support = item && findSupport(item, Math.round((x + roomW / 2) * 100), Math.round((z + roomD / 2) * 100), propsRef.current.items, propsRef.current.products); drag.group.position.y = support ? supportHeight(propsRef.current.products.find(p => Number(p.id) === Number(support.productId))) / 100 : 0; drag.supportUid = support?.uid || null; drag.elevation = support ? supportHeight(propsRef.current.products.find(p => Number(p.id) === Number(support.productId))) : 0; if (drag.clothIndex >= 0) drag.cloth.grabTarget.y = Math.max(drag.cloth.floorY ?? .028, drag.clothStartY + lift); drag.moved ||= Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 4; };
+      const up = () => { const drag = dragRef.current; if (!drag) return; dragRef.current = null; if (drag.clothIndex >= 0) { drag.cloth.grabbedIndex = -1; clothStatesRef.current.set(drag.instanceId, snapshotCloth(drag.cloth)); } controls.enabled = true; if (drag.moved) propsRef.current.onMove(drag.instanceId, Math.round((drag.group.position.x + Number(propsRef.current.width) / 200) * 100), Math.round((drag.group.position.z + Number(propsRef.current.depth) / 200) * 100), drag.elevation || 0, drag.supportUid || null); };
       renderer.domElement.addEventListener('pointerdown', down); renderer.domElement.addEventListener('pointermove', move); renderer.domElement.addEventListener('pointerup', up); renderer.domElement.addEventListener('pointercancel', up);
       renderer.domElement.addEventListener('wheel', event => { if (event.ctrlKey || event.metaKey) { event.preventDefault(); const next = THREE.MathUtils.clamp((propsRef.current.zoom || 1) + (event.deltaY < 0 ? .08 : -.08), .65, 1.8); propsRef.current.onZoom(next); } }, { passive: false });
-      mount._cleanup = () => { cancelAnimationFrame(frame); observer.disconnect(); controls.dispose(); renderer.domElement.removeEventListener('pointerdown', down); renderer.domElement.removeEventListener('pointermove', move); renderer.domElement.removeEventListener('pointerup', up); renderer.domElement.removeEventListener('pointercancel', up); scene.traverse(obj => { if (obj.geometry && !obj.userData.catalogAsset) obj.geometry.dispose(); if (obj.material) { const materials = Array.isArray(obj.material) ? obj.material : [obj.material]; materials.forEach(mat => { if (!obj.userData.catalogAsset) mat.map?.dispose(); mat.dispose(); }); } }); renderer.dispose(); renderer.domElement.remove(); };
+      mount._cleanup = () => { rememberCloth(); cancelAnimationFrame(frame); observer.disconnect(); controls.dispose(); renderer.domElement.removeEventListener('pointerdown', down); renderer.domElement.removeEventListener('pointermove', move); renderer.domElement.removeEventListener('pointerup', up); renderer.domElement.removeEventListener('pointercancel', up); scene.traverse(obj => { if (obj.geometry && !obj.userData.catalogAsset) obj.geometry.dispose(); if (obj.material) { const materials = Array.isArray(obj.material) ? obj.material : [obj.material]; materials.forEach(mat => { if (!obj.userData.catalogAsset) mat.map?.dispose(); mat.dispose(); }); } }); renderer.dispose(); renderer.domElement.remove(); };
     } catch (error) { mount.dataset.webglError = error.message; }
     return () => { mount._cleanup?.(); sceneRef.current = null; cameraRef.current = null; controlsRef.current = null; rendererRef.current = null; groupsRef.current.clear(); };
   }, [width, depth, mode]);
@@ -283,16 +386,19 @@ function RoomViewport({ width, depth, products, items, selectedId, onSelect, onM
   useEffect(() => {
     const scene = sceneRef.current; if (!scene) return;
     let active = true;
+    rememberCloth();
     for (const group of groupsRef.current.values()) { scene.remove(group); disposeModelGroup(group); }
     groupsRef.current.clear();
     const roomW = Number(width) / 100, roomD = Number(depth) / 100;
     items.forEach(item => {
       const product = products.find(p => Number(p.id) === Number(item.productId)); if (!product) return;
-      const id = item.uid || `piece-${item.productId}`, group = buildModel(product);
+      const id = item.uid || `piece-${item.productId}`, group = isSoftBlanket(product) ? buildBlanketModel(product, clothStatesRef.current.get(id)) : buildModel(product);
+      if (group.userData.clothSim) group.userData.clothSim.floorY = Number(item.elevation || 0) > 0 ? .006 : .028;
       group.position.set(Number(item.x) / 100 - roomW / 2, Number(item.elevation || 0) / 100, Number(item.z) / 100 - roomD / 2); group.rotation.y = THREE.MathUtils.degToRad(Number(item.rotation) || 0);
       group.userData.instanceId = id;
       group.traverse(object => { object.userData.instanceId = id; });
       scene.add(group); groupsRef.current.set(id, group);
+      if (isSoftBlanket(product)) return;
       loadProductModel(product).then(model => {
         if (!active || sceneRef.current !== scene || groupsRef.current.get(id) !== group) { disposeModelGroup(model); return; }
         model.position.copy(group.position); model.rotation.copy(group.rotation); model.userData.instanceId = id;
@@ -304,10 +410,11 @@ function RoomViewport({ width, depth, products, items, selectedId, onSelect, onM
     if (cameraRef.current) { cameraRef.current.zoom = zoom; cameraRef.current.updateProjectionMatrix(); }
     return () => {
       active = false;
+      rememberCloth();
       for (const group of groupsRef.current.values()) { scene.remove(group); disposeModelGroup(group); }
       groupsRef.current.clear();
     };
-  }, [items, products, width, depth, zoom]);
+  }, [items, products, width, depth, zoom, mode]);
 
   useEffect(() => {
     for (const [id, group] of groupsRef.current) setModelSelection(group, id, selectedId);
@@ -495,6 +602,7 @@ export function RoomPlanner({ onProduct }) {
     <section className="planner-stage" aria-label="Editor de divisão">
       <RoomViewport width={width} depth={depth} products={catalog} items={items} selectedId={selectedId} onSelect={setSelectedId} onMove={moveProduct} mode={mode} zoom={zoom} onZoom={setZoom}/>
       <div className="planner-stage-heading"><span>{mode === '3d' ? 'Vista 3D' : 'Planta 2D'}</span><b>{width} × {depth} cm</b></div>
+      {mode === '3d' && selected && isSoftBlanket(selected.product) && <div className="planner-cloth-hint" role="status"><Move3D size={15}/>Segura a manta e arrasta para cima; solta para a deixar cair.</div>}
       <div className="planner-tool-rail" aria-label="Ferramentas"><button className={panel === 'catalog' ? 'active' : ''} aria-label="Abrir catálogo" title="Catálogo" onClick={() => setPanel('catalog')}><Grid2X2 size={19}/></button><button className={panel === 'room' ? 'active' : ''} aria-label="Definições da divisão" title="Definições da divisão" onClick={() => setPanel('room')}><Home size={19}/></button><button aria-label="Ajustar zoom" title="Ajustar zoom" onClick={() => setZoom(1)}><Maximize2 size={18}/></button></div>
 
       <aside className={`planner-side-panel ${panel === 'room' ? 'room-settings-open' : ''} ${panel === 'closed' ? 'is-closed' : ''}`}>
@@ -509,7 +617,7 @@ export function RoomPlanner({ onProduct }) {
       {selected && <div className="planner-selection-card"><img src={selected.product.image} alt=""/><div><b>{selected.product.name}</b><span>{dimensions(selected.product).width} × {dimensions(selected.product).depth} cm · {money(selected.product.price_cents)}</span>{selected.item.supportUid && <span className="planner-stack-context">Sobre {catalog.find(product => Number(product.id) === Number(items.find(item => item.uid === selected.item.supportUid)?.productId))?.name || 'outra peça'}</span>}</div>{selected.item.supportUid && <button title="Selecionar o móvel de suporte" aria-label={`Selecionar suporte de ${selected.product.name}`} onClick={() => setSelectedId(selected.item.supportUid)}><Layers size={17}/></button>}<button title="Rodar 90°" aria-label={`Rodar ${selected.product.name}`} onClick={() => rotateProduct(selected.item.uid)}><RotateCw size={17}/></button><button title="Eliminar da divisão" aria-label={`Eliminar ${selected.product.name} da divisão`} onClick={() => removeProduct(selected.item.uid)}><Trash2 size={17}/></button></div>}
 
       <div className="planner-zoom-controls"><button aria-label="Reduzir zoom" onClick={() => setZoom(value => Math.max(.65, Math.round((value - .1) * 100) / 100))}><Minus size={16}/></button><span>{Math.round(zoom * 100)}%</span><button aria-label="Aumentar zoom" onClick={() => setZoom(value => Math.min(1.8, Math.round((value + .1) * 100) / 100))}><Plus size={16}/></button></div>
-      <div className="planner-stage-status"><span><Move3D size={15}/>Arrasta para mover</span><span><RotateCw size={14}/>R para rodar</span><span className="planner-stage-count">{items.length} {items.length === 1 ? 'peça' : 'peças'} · {money(total)}</span></div>
+      <div className="planner-stage-status"><span><Move3D size={15}/>{mode === '2d' ? 'Arrasta sobre uma mesa para empilhar' : 'Arrasta para mover'}</span><span><RotateCw size={14}/>R para rodar</span><span className="planner-stage-count">{items.length} {items.length === 1 ? 'peça' : 'peças'} · {money(total)}</span></div>
       {mode === '3d' && overlapIds.size > 0 && <div className="planner-stage-overlap" role="status">{overlapIds.size} peças sobrepostas · ajusta a disposição na planta 2D</div>}
       {notice && <div className="planner-toast" role="status">{notice}<button aria-label="Fechar aviso" onClick={() => setNotice('')}><X size={14}/></button></div>}
     </section>
