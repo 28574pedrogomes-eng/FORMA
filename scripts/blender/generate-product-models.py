@@ -1,4 +1,4 @@
-import bpy
+﻿import bpy
 import json
 import math
 import os
@@ -93,6 +93,21 @@ def product_palette(product):
 def dimensions(product, kind):
     text = product.get('dimensions', '') + ' ' + product.get('description', '')
     text = normal(text)
+    product_name = normal(product.get('name', ''))
+    if 'secretaria traco' in product_name or 'escrivaninha' in product_name:
+        return 1.20, .60, .75
+    if 'consola memoria' in product_name:
+        return 1.18, .42, .78
+    if 'espelho' in product_name:
+        size = re.search(r'(\d{1,3}(?:[.,]\d+)?)\s*[x×]\s*(\d{1,3}(?:[.,]\d+)?)\s*cm', text, re.I)
+        if size: return float(size.group(1).replace(',', '.')) / 100, .065, float(size.group(2).replace(',', '.')) / 100
+        return .50, .065, .70
+    if 'candeeiro de pe' in product_name:
+        if 'linha' in product_name:
+            return .28, .28, 1.45
+        return .38, .38, 1.25
+    if 'conjunto de 4' in product_name and 'pratos alegria' in product_name:
+        return .30, .30, .12
     number = r'(\d{1,3}(?:[.,]\d+)?)'
     defaults = {'seating': (1.8, .78, .82), 'table': (1.0, .62, .74), 'storage': (1.0, .40, 1.05), 'light': (.38, .38, 1.0), 'decor': (.26, .26, .34), 'rug': (1.4, 1.1, .025), 'textile': (.45, .45, .09), 'bed': (1.8, 2.0, .48), 'tableware': (.24, .24, .12)}
     fallback = defaults.get(kind, (.7, .5, .6))
@@ -123,11 +138,21 @@ def dimensions(product, kind):
 
 def kind_of(product):
     text = normal(product['name'] + ' ' + product.get('description', '') + ' ' + product.get('category', ''))
+    product_name = normal(product.get('name', ''))
+    # Product descriptions can mention a sofa/chair as styling context; the catalog name owns the model category.
+    if any(word in product_name for word in ('almofada', 'manta', 'colcha', 'edredao', 'textil', 'tecido')): return 'textile'
+    if 'conjunto de 4' in product_name and 'pratos' in product_name: return 'tableware'
+    if 'secretaria' in product_name or 'escrivaninha' in product_name: return 'table'
+    if 'consola' in product_name or 'aparador' in product_name: return 'storage'
+    if 'espelho' in product_name or 'jarra' in product_name or 'vela' in product_name: return 'decor'
+    if 'candeeiro' in product_name or 'lampada' in product_name: return 'light'
+    if 'poltrona' in product_name or 'cadeira' in product_name or 'sofa' in product_name: return 'seating'
     if any(word in text for word in ('sofa', 'poltrona', 'cadeira', 'banco', 'banqueta', 'puff', 'banqueta')): return 'seating'
     if any(word in text for word in ('candeeiro', 'lampada', 'aplique', 'suspensao', 'lanterna')): return 'light'
     if any(word in text for word in ('tapete', 'passadeira')): return 'rug'
     if any(word in text for word in ('almofada', 'manta', 'colcha', 'edredao', 'textil', 'tecido')): return 'textile'
     if any(word in text for word in ('cama', 'colchao', 'cabeceira')): return 'bed'
+    if any(word in text for word in ('secretaria', 'escrivaninha')): return 'table'
     if any(word in text for word in ('jarra', 'vaso', 'planta', 'cesto', 'vela', 'espelho', 'castical', 'tabuleiro', 'escultura')): return 'decor'
     if any(word in text for word in ('caneca', 'copo', 'chavena', 'taca', 'prato', 'servico', 'pires')): return 'tableware'
     if any(word in text for word in ('estante', 'armario', 'aparador', 'consola', 'secretaria', 'arrumacao', 'gaveta', 'sapateira')): return 'storage'
@@ -254,8 +279,50 @@ def add_seating(name, w, d, h, m, description):
         for x in (-w * .50, w * .50): cube('Apoio de braço', (x * .86, 0, seat_h + .12), (w * .13, d * .77, .12), m['wood'], .045)
 
 
+def add_trama_armchair(w, d, h, m):
+    seat_h = h * .36
+    rx, ry = w * .49, d * .47
+    # An open backed woven chair with a low half shell and a clearly open front.
+    profile = ((.22, seat_h * .94), (.42, seat_h * 1.08), (.65, seat_h * 1.34), (.84, seat_h * 1.60), (.96, seat_h * 1.73))
+    for index, (factor, z) in enumerate(profile):
+        points = [(math.cos(math.pi + math.pi * step / 24) * rx * factor, math.sin(math.pi + math.pi * step / 24) * ry * factor, z) for step in range(25)]
+        for a, b in zip(points, points[1:]): rod('Aro curvo do encosto', a, b, .012 if index else .016, m['fabric_light'])
+    for index in range(24):
+        angle = math.tau * index / 24
+        if math.sin(angle) > .12: continue
+        points = [(math.cos(angle) * rx * factor, math.sin(angle) * ry * factor, z) for factor, z in profile]
+        for a, b in zip(points, points[1:]): rod('Corda vertical do encosto', a, b, .0075, m['fabric_light'])
+    for row in range(7):
+        factor = .24 + row * .115; z = seat_h * (1.02 + row * .105)
+        points = [(math.cos(math.pi + math.pi * step / 24) * rx * factor, math.sin(math.pi + math.pi * step / 24) * ry * factor, z) for step in range(25)]
+        for a, b in zip(points, points[1:]): rod('Trama horizontal do encosto', a, b, .0065, m['fabric_light'])
+    # A dense woven seat remains visible through the open front.
+    seat_top = seat_h * 1.05
+    for index in range(13):
+        p = (index / 12 - .5) * w * .48
+        rod('Fio longitudinal do assento', (p, -d * .22, seat_top), (p, d * .22, seat_top), .0065, m['fabric_light'])
+        rod('Fio transversal do assento', (-w * .24, p * d / w, seat_top), (w * .24, p * d / w, seat_top), .0065, m['fabric_light'])
+    cylinder('Assento circular entrancado', (0, 0, seat_top - .026), w * .31, .045, m['fabric_light'], 48)
+    # Four narrow, splayed black steel legs and a stabilizing cross brace.
+    for x in (-w * .32, w * .32):
+        for y in (-d * .28, d * .28):
+            rod('Perna preta inclinada', (x * 1.45, y * 1.35, .025), (x * .68, y * .62, seat_h * .98), .018, m['metal'])
+    rod('Travessa frontal', (-w * .35, -d * .25, seat_h * .30), (w * .35, -d * .25, seat_h * .30), .012, m['metal'])
+    rod('Travessa lateral', (-w * .30, -d * .25, seat_h * .30), (-w * .30, d * .25, seat_h * .30), .012, m['metal'])
+
+
 def add_table(name, w, d, h, m, description):
     text = normal(name + ' ' + description); round_top = any(x in text for x in ('redonda', 'circular', 'round', 'lateral noma', 'apoio tronco'))
+    if 'secretaria traco' in text:
+        cube('Tampo fino de madeira', (0, 0, h - .035), (w * .98, d * .94, .07), m['wood_light'], .018)
+        cube('Gaveta central discreta', (0, -d * .25, h - .115), (w * .34, d * .23, .12), m['wood'], .012)
+        cylinder('Puxador de latÃ£o', (0, -d * .37, h - .115), .009, .018, m['metal'], 12)
+        # Thin black hairpin legs, closer to the reference than a blocky table base.
+        for x in (-w * .40, w * .40):
+            for y in (-d * .34, d * .34):
+                rod('Perna em hairpin', (x * 1.12, y * 1.12, .025), (x * .82, y * .82, h - .07), .012, m['metal'])
+        for x in (-w * .40, w * .40): rod('Travessa lateral fina', (x * 1.08, -d * .25, h * .32), (x * 1.08, d * .25, h * .32), .009, m['metal'])
+        return
     if round_top:
         cylinder('Tampo redondo', (0, 0, h - .045), min(w, d) * .48, .09, m['wood'], 48)
         if 'tronco' in text:
@@ -280,6 +347,17 @@ def add_table(name, w, d, h, m, description):
 
 def add_storage(name, w, d, h, m, description):
     text = normal(name + ' ' + description); sideboard = h < 1.0 or any(x in text for x in ('aparador', 'consola', 'buffet'))
+    if 'consola memoria' in text:
+        top_z = h * .88
+        cube('Tampo largo da consola', (0, 0, top_z), (w * .98, d * .92, .055), m['wood_light'], .018)
+        cube('Corpo inferior da consola', (0, 0, h * .53), (w * .89, d * .72, h * .50), m['wood'], .026)
+        front = d * .38
+        cube('Gaveta central da consola', (0, front, h * .64), (w * .48, .028, h * .20), m['wood_light'], .014)
+        cylinder('Puxador de latão', (0, front + .018, h * .64), .014, .018, m['metal'], 16)
+        for x in (-w * .40, w * .40):
+            for y in (-d * .29, d * .29):
+                rod('Perna alta da consola', (x * 1.04, y * 1.08, .025), (x, y, h * .31), .018, m['metal'])
+        return
     cube('Caixa de madeira', (0, 0, h * .53), (w * .92, d * .84, h * .88), m['wood'], .035)
     front = d * .43
     if any(x in text for x in ('secretaria', 'secretaria', 'gaveta', 'aparador', 'consola')) or sideboard:
@@ -300,7 +378,23 @@ def add_storage(name, w, d, h, m, description):
 def add_light(name, w, d, h, m, description):
     text = normal(name + ' ' + description); floor = bool(re.search(r'\b(pe|chao)\b', text)) or h > 1.15; pendant = 'suspensao' in text or 'suspenso' in text
     shade = m['fabric_light'] if 'abat-jour' in text else m['ceramic']
-    if 'aplique' in text:
+    if 'candeeiro de pe linha' in text:
+        # Match the reference: a single white upright with an angled, flat square head.
+        lamp_white = mat('Lacado marfim do Candeeiro Linha', (.82, .81, .76), .30, .08)
+        cylinder('Base circular pesada', (0, 0, .025), min(w, d) * .37, .05, m['metal'], 48)
+        rod('Haste branca esguia', (0, 0, .05), (0, 0, h * .82), .012, lamp_white)
+        cylinder('Junta grafite', (0, 0, h * .82), .024, .042, m['dark'], 20)
+        rod('Braço curto da cabeça', (0, 0, h * .83), (w * .12, 0, h * .90), .010, lamp_white)
+        head = cube('Cabeça quadrada orientável', (w * .14, 0, h * .91), (w * .43, d * .54, h * .035), lamp_white, .016)
+        head.rotation_euler[1] = -.42
+        cube('Difusor branco da cabeça', (w * .15, -.002, h * .895), (w * .31, d * .40, h * .012), m['glass'], .012)
+    elif 'candeeiro de pe sombra' in text:
+        # Keep the shade compact and broad like the photograph; use the real floor-lamp silhouette.
+        cylinder('Base baixa escura', (0, 0, .026), min(w, d) * .39, .052, m['dark'], 48)
+        rod('Haste fina escura', (0, 0, .052), (0, 0, h * .83), .012, m['metal'])
+        cylinder('Abat-jour de tecido escuro', (0, 0, h * .88), min(w, d) * .47, h * .16, m['dark'], 48, min(w, d) * .30)
+        cylinder('Difusor interior', (0, 0, h * .795), min(w, d) * .31, .012, m['fabric_light'], 40)
+    elif 'aplique' in text:
         cylinder('Placa de parede', (0, -d * .42, h * .52), min(w, d) * .28, .055, m['metal'], 32)
         rod('Braço de parede', (0, -d * .36, h * .52), (0, d * .03, h * .52), .018, m['metal'])
         sphere('Globo difusor', (0, d * .12, h * .52), (min(w, d) * .38,) * 3, m['glass'] if 'globo' in text else shade)
@@ -357,8 +451,12 @@ def add_vase(name, w, d, h, m, description):
         return
     radius = min(w, d) * .46
     if 'anel' in text:
-        torus('Aro escultural', (0, 0, h * .53), h * .27, min(w, d) * .10, m['ceramic'], (0, math.pi / 2, 0))
-        cylinder('Base decorativa', (0, 0, .035), radius * .55, .07, m['wood'])
+        black_glaze = mat('Esmalte preto brilhante da Jarra Anel', (.018, .019, .021), .16, .18)
+        body = w * .43
+        profile = [(body * .52, 0), (body * .76, h * .06), (body * .98, h * .22), (body, h * .48), (body * .90, h * .70), (body * .61, h * .84), (body * .34, h * .89), (body * .31, h * .98), (body * .39, h), (body * .39, h * .94), (body * .30, h * .91)]
+        vessel = lathe('Corpo bojudo de cerâmica negra', (0, 0, .018), profile, black_glaze, 64); vessel.scale.y = d / w
+        lip = torus('Aro espesso da abertura', (0, 0, h * .98), body * .36, .009, black_glaze); lip.scale.y = d / w
+        interior = lathe('Interior oco do gargalo', (0, 0, h * .91), [(body * .29, 0), (body * .27, h * .03), (body * .27, h * .085)], m['dark'], 48); interior.scale.y = d / w
     else:
         neck = radius * (.38 if 'canelada' in text else .55)
         profile = [(radius * .45, 0), (radius * .78, h * .04), (radius, h * .30), (radius * .95, h * .55), (radius * .72, h * .78), (neck, h * .84), (neck, h * .98), (neck * .85, h)]
@@ -402,15 +500,87 @@ def add_textile(name, w, d, h, m, description):
                 x = -w * .43 + i * w * .054
                 rod('Franja do tapete', (x, edge_y, .023), (x + (i % 2 - .5) * .012, edge_y * 1.055, .017), .0035, m['fabric_light'])
     elif 'almofada' in text:
-        cube('Almofada interior', (0, 0, h * .50), (w * .91, d * .91, h * .88), m['fabric'], min(.08, h * .28))
+        # Rounded, puffed cushion with soft edges instead of a beveled box.
+        segments = 64
+        exponent = 2 / 4.2
+        rings = [(.16, -.43), (.72, -.50), (.96, -.35), (1.0, -.12), (.96, .30), (.72, .50), (.34, .51)]
+        verts, faces = [], []
+        for factor, z_factor in rings:
+            for index in range(segments):
+                angle = math.tau * index / segments
+                cx, sy = math.cos(angle), math.sin(angle)
+                x = w * .5 * factor * math.copysign(abs(cx) ** exponent, cx)
+                y = d * .5 * factor * math.copysign(abs(sy) ** exponent, sy)
+                verts.append((x, y, h * (.50 + z_factor * .50)))
+        for row in range(len(rings) - 1):
+            for index in range(segments):
+                a = row * segments + index; b = row * segments + (index + 1) % segments
+                faces.append((a, b, b + segments, a + segments))
+        faces.append(tuple(reversed(range(segments))))
+        faces.append(tuple((len(rings) - 1) * segments + index for index in range(segments)))
+        mesh = bpy.data.meshes.new('Malha almofadada de cantos arredondados'); mesh.from_pydata(verts, [], faces); mesh.materials.append(m['fabric']); mesh.update()
+        cushion = bpy.data.objects.new('Almofada macia e volumosa', mesh); bpy.context.collection.objects.link(cushion)
+        for poly in mesh.polygons: poly.use_smooth = True
+        bevel = cushion.modifiers.new('Costuras arredondadas', 'BEVEL'); bevel.width = min(.008, h * .12); bevel.segments = 3
+        # Five slightly curved blue stripes carry the woven reference pattern onto the top face.
+        if 'trama' in text:
+            stripe = mat('Azul das riscas da Almofada Trama', (.10, .24, .35), .78)
+            for index in range(5):
+                x = -w * .31 + index * w * .155
+                points = []
+                for step in range(11):
+                    v = step / 10; y = -d * .28 + v * d * .56
+                    z = h * (.79 + .012 * math.sin(math.pi * v) * max(0, 1 - abs(x / (w * .5)) ** 3))
+                    points.append((x + .008 * math.sin(v * math.tau), y, z))
+                for a, b in zip(points, points[1:]): rod('Risca tecida azul', a, b, .0035, stripe)
         for side in (-1, 1):
-            y = side * d * .458
-            rod('Pesponto lateral', (-w * .39, y, h * .50), (w * .39, y, h * .50), .0025, m['fabric_light'])
-            rod('Pesponto de canto', (side * w * .455, -d * .37, h * .50), (side * w * .455, d * .37, h * .50), .0025, m['fabric_light'])
-        if 'riscas' in text or 'espiga' in text or 'paleta' in text:
-            for i in range(5):
-                x = -w * .36 + i * w * .18
-                cube('Padrao tecido', (x, -d * .474, h * .53), (w * .07, .012, h * .68), m['accent'] if i % 2 == 0 else m['accent2'], .005)
+            y = side * d * .465
+            rod('Pesponto da almofada', (-w * .33, y, h * .49), (w * .33, y, h * .49), .0025, m['fabric_light'])
+    elif 'manta abrigo' in text:
+        # A rolled terracotta throw with a separate soft tail, distinct from the open Sereno drape.
+        roll_radius = min(h * .64, d * .095)
+        roll = cylinder('Rolo macio da Manta Abrigo', (-w * .30, 0, roll_radius + .015), roll_radius, d * .78, m['fabric_light'], 48)
+        roll.rotation_euler[0] = math.pi / 2
+        for turn in range(5):
+            torus('Volta de tecido do rolo', (-w * .30, 0, roll_radius + .015), roll_radius * (.86 - turn * .075), .006, m['accent2'], (math.pi / 2, 0, 0))
+        nx, ny = 20, 28; verts, faces = [], []
+        for row in range(ny + 1):
+            v = row / ny; y = -d * .46 + d * .92 * v
+            for col in range(nx + 1):
+                u = col / nx; x = -w * .24 + w * .72 * u
+                wave = .009 * math.sin(u * math.tau * 3 + v * 4)
+                z = .025 + roll_radius * .62 * math.exp(-((x + w * .24) / max(.03, roll_radius)) ** 2) + wave
+                verts.append((x, y, z))
+        for row in range(ny):
+            for col in range(nx):
+                a = row * (nx + 1) + col; faces.append((a, a + 1, a + nx + 2, a + nx + 1))
+        mesh = bpy.data.meshes.new('Malha da Manta Abrigo dobrada'); mesh.from_pydata(verts, [], faces); mesh.materials.append(m['fabric_light']); mesh.update()
+        tail = bpy.data.objects.new('Cauda de tecido macio da manta', mesh); bpy.context.collection.objects.link(tail)
+        solid = tail.modifiers.new('Espessura do tecido', 'SOLIDIFY'); solid.thickness = .009
+        for poly in mesh.polygons: poly.use_smooth = True
+        for edge_y in (-d * .46, d * .46): rod('Bainha da manta terracota', (-w * .22, edge_y, .035), (w * .46, edge_y, .035), .003, m['accent2'])
+    elif 'manta sereno' in text:
+        nx, ny = 32, 36; verts, faces = [], []
+        for row in range(ny + 1):
+            v = row / ny; y = -d * .48 + d * .96 * v
+            for col in range(nx + 1):
+                u = col / nx; x = -w * .48 + w * .96 * u
+                edge = max(abs(u - .5) * 2, abs(v - .5) * 2)
+                folds = .016 * math.sin(u * math.tau * 5 + v * 3) + .008 * math.sin(u * math.tau * 9 - v * 6)
+                sag = .15 * math.sin(math.pi * u) ** .75 - .11 * max(0, (v - .70) / .30) ** 1.5 - .06 * max(0, (abs(u - .5) - .39) / .11) ** 1.4
+                verts.append((x, y, max(.018, .045 + sag + folds * edge)))
+        for row in range(ny):
+            for col in range(nx):
+                a = row * (nx + 1) + col; faces.append((a, a + 1, a + nx + 2, a + nx + 1))
+        mesh = bpy.data.meshes.new('Malha fluida da Manta Sereno'); mesh.from_pydata(verts, [], faces); mesh.materials.append(m['fabric_light']); mesh.update()
+        sheet = bpy.data.objects.new('Manta Sereno com pregas longas', mesh); bpy.context.collection.objects.link(sheet)
+        for poly in mesh.polygons: poly.use_smooth = True
+        solid = sheet.modifiers.new('Tecido fino', 'SOLIDIFY'); solid.thickness = .008
+        for edge_y in (-d * .48, d * .48): rod('Bainha clara da Manta Sereno', (-w * .47, edge_y, .035), (w * .47, edge_y, .035), .003, m['fabric'])
+        for edge_y in (-d * .49, d * .49):
+            for index in range(19):
+                x = -w * .43 + index * w * .048
+                rod('Franja curta da Manta Sereno', (x, edge_y, .04), (x + .004 * math.sin(index), edge_y * 1.045, .018), .0025, m['fabric_light'])
     else:
         # Static gravity-inspired cloth geometry keeps GLB models lightweight and deterministic.
         nx, ny = 28, 32; verts, faces = [], []
@@ -440,9 +610,52 @@ def add_rug(name, w, d, h, m, description):
     add_textile(name, w, d, h, m, description)
 
 
+def add_mirror(name, w, d, h, m):
+    frame = mat('Aro de madeira do espelho', (.34, .22, .13), .42)
+    glass = mat('Vidro refletor', (.63, .74, .76), .10, .48)
+    cx, cz, rx, rz, segments = 0, h * .51, w * .46, h * .47, 80
+    outer, inner = [], []
+    for i in range(segments):
+        angle = math.tau * i / segments
+        outer.append((cx + rx * math.cos(angle), -.018, cz + rz * math.sin(angle)))
+        inner.append((cx + rx * .91 * math.cos(angle), -.024, cz + rz * .91 * math.sin(angle)))
+    verts, faces = outer + inner, []
+    for i in range(segments):
+        j = (i + 1) % segments; faces.append((i, j, segments + j, segments + i))
+    mesh = bpy.data.meshes.new('Aro oval do Espelho Reflexo'); mesh.from_pydata(verts, [], faces); mesh.materials.append(frame); mesh.update()
+    rim = bpy.data.objects.new('Moldura oval fina', mesh); bpy.context.collection.objects.link(rim)
+    solid = rim.modifiers.new('Volume da moldura', 'SOLIDIFY'); solid.thickness = .028
+    bevel = rim.modifiers.new('Bordo polido', 'BEVEL'); bevel.width = .006; bevel.segments = 3
+    mirror_verts = [(rx * .91 * math.cos(math.tau * i / segments), .002, cz + rz * .91 * math.sin(math.tau * i / segments)) for i in range(segments)] + [(0, .002, cz)]
+    mirror_faces = [(i, (i + 1) % segments, segments) for i in range(segments)]
+    glass_mesh = bpy.data.meshes.new('Superficie plana de vidro'); glass_mesh.from_pydata(mirror_verts, [], mirror_faces); glass_mesh.materials.append(glass); glass_mesh.update()
+    surface = bpy.data.objects.new('Superficie refletora oval', glass_mesh); bpy.context.collection.objects.link(surface)
+    if 'mesa' in normal(name):
+        rod('Suporte traseiro', (0, .025, h * .31), (0, d * .39, .035), .014, m['metal'])
+        cube('Base do espelho', (0, d * .30, .035), (w * .54, d * .32, .055), frame, .01)
+
+
+def add_beeswax_candles(w, d, h, m):
+    wax = mat('Cera de abelha dourada', (.72, .43, .10), .58)
+    radius = min(w, d) * .055
+    heights = (.66, .82, .73, .94, .78, .88)
+    positions = [(-.20, -.18), (0, -.18), (.20, -.18), (-.20, .18), (0, .18), (.20, .18)]
+    for i, ((px, py), height) in enumerate(zip(positions, heights)):
+        x, y = px * w, py * d; candle_h = h * height
+        cylinder('Vela hexagonal de cera', (x, y, candle_h * .5), radius, candle_h, wax, 6, radius * .88)
+        for band in range(5): torus('Relevo de favo de mel', (x, y, candle_h * (.18 + band * .145)), radius * .99, .0025, wax)
+        cylinder('Pavio de algodao', (x, y, candle_h + .007), .0025, .014, m['dark'], 8)
+
+
 def add_decor(name, w, d, h, m, description):
     text = normal(name + ' ' + description)
-    if 'planta' in normal(name) and 'vaso' not in normal(name):
+    if 'jarra anel' in text:
+        add_vase(name, w, d, h, m, description)
+    elif 'espelho' in text:
+        add_mirror(name, w, d, h, m)
+    elif 'vela' in text and 'colmeia' in text:
+        add_beeswax_candles(w, d, h, m)
+    elif 'planta' in normal(name) and 'vaso' not in normal(name):
         cylinder('Vaso de planta', (0, 0, h * .16), min(w, d) * .36, h * .32, m['ceramic'], 28, min(w, d) * .43)
         for i in range(9):
             angle = i * math.tau / 9; radius = min(w, d) * (.16 + .015 * (i % 2))
@@ -484,7 +697,15 @@ def add_bed(name, w, d, h, m, description):
 
 def add_tableware(name, w, d, h, m, description):
     text = normal(name + ' ' + description); radius = min(w, d) * .48
-    if 'servico' in text or '4 pecas' in text:
+    if 'pratos alegria' in text:
+        palette = [m['ceramic'], mat('Esmalte azul dos pratos', (.23, .39, .47), .24), mat('Esmalte ocre dos pratos', (.70, .43, .18), .25), mat('Esmalte verde dos pratos', (.35, .44, .34), .27)]
+        offsets = [(-.19, -.19), (.19, -.19), (-.19, .19), (.19, .19)]
+        for i, ((ox, oy), material) in enumerate(zip(offsets, palette)):
+            x, y = ox * w, oy * d; z = .018 + i * .001; plate_r = radius * .43
+            lathe('Prato colorido raso', (x, y, z), [(plate_r * .94, 0), (plate_r, .009), (plate_r * .91, .016), (plate_r * .70, .020), (plate_r * .56, .015)], material, 56)
+            torus('Bordo canelado do prato', (x, y, z + .014), plate_r * .92, .0035, material)
+            torus('Filete decorativo do prato', (x, y, z + .017), plate_r * .72, .0018, m['fabric_light'])
+    elif 'servico' in text or '4 pecas' in text:
         cylinder('Prato grande', (-w * .22, 0, .025), radius * .56, .045, m['ceramic'], 48)
         cylinder('Prato pequeno', (w * .22, 0, .025), radius * .46, .035, m['fabric_light'], 48)
         lathe('Taça do serviço', (0, d * .30, .02), [(radius * .16, 0), (radius * .4, .03), (radius * .44, .12), (radius * .34, .19)], m['ceramic'])
@@ -515,7 +736,8 @@ def build(product):
     kind = kind_of(product); w, d, h = dimensions(product, kind)
     # Photo proportions influence width/depth if an item description has no dimensions.
     materials = product_palette(product)
-    if kind == 'seating': add_seating(product['name'], w, d, h, materials, product.get('description', ''))
+    if 'poltrona trama' in text: add_trama_armchair(w, d, h, materials)
+    elif kind == 'seating': add_seating(product['name'], w, d, h, materials, product.get('description', ''))
     elif kind == 'table': add_table(product['name'], w, d, h, materials, product.get('description', ''))
     elif kind == 'storage': add_storage(product['name'], w, d, h, materials, product.get('description', ''))
     elif kind == 'light': add_light(product['name'], w, d, h, materials, product.get('description', ''))
@@ -536,6 +758,9 @@ def build(product):
 
 
 with open(CATALOG, 'r', encoding='utf-8') as handle: catalog = json.load(handle)
+if ARGS.get('slugs'):
+    selected_slugs = {value.strip() for value in ARGS['slugs'].split(',') if value.strip()}
+    catalog = [product for product in catalog if re.sub(r'[^a-z0-9]+', '-', normal(product['name'])).strip('-') in selected_slugs]
 print('Generating', len(catalog), 'FORMA models in Blender')
 failed = []
 for index, product in enumerate(catalog, 1):

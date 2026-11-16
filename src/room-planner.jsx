@@ -32,6 +32,13 @@ const kindOf = product => {
 const dimensions = product => {
   const kind = kindOf(product);
   const defaults = { seating: [190, 82, 82], table: [110, 68, 74], light: [42, 42, 100], storage: [105, 38, 105], rug: [160, 120, 3], textile: [45, 45, 9], bed: [180, 200, 48], decor: [26, 26, 34], tableware: [24, 24, 12] }[kind];
+  const name = norm(product?.name || '');
+  if (name.includes('secretaria traco')) return { width: 120, depth: 60, height: 75, kind: 'table' };
+  if (name.includes('consola memoria')) return { width: 118, depth: 42, height: 78, kind: 'storage' };
+  if (name.includes('espelho reflexo')) return { width: 50, depth: 6.5, height: 70, kind: 'decor' };
+  if (name.includes('candeeiro de pe linha')) return { width: 28, depth: 28, height: 145, kind: 'light' };
+  if (name.includes('candeeiro de pe sombra')) return { width: 38, depth: 38, height: 125, kind: 'light' };
+  if (name.includes('pratos alegria')) return { width: 30, depth: 30, height: 12, kind: 'tableware' };
   const text = norm(`${product?.dimensions || ''} ${product?.description || ''}`);
   const number = '(\\d{1,3}(?:[.,]\\d+)?)';
   let parsed = null;
@@ -89,12 +96,17 @@ function loadProductModel(product) {
 
 function buildBlanketModel(product, savedState) {
   const { width, depth, height } = dimensions(product), w = width / 100, d = depth / 100;
+  const name = norm(product?.name || ''), abrigo = name.includes('manta abrigo');
   const columns = 27, rows = 33, count = columns * rows, positions = new Float32Array(count * 3), previous = new Float32Array(count * 3), uv = new Float32Array(count * 2), indices = [];
   const states = savedState?.positions?.length === positions.length && savedState?.previous?.length === previous.length;
   for (let row = 0; row < rows; row += 1) for (let col = 0; col < columns; col += 1) {
     const i = row * columns + col, u = col / (columns - 1), v = row / (rows - 1), p = i * 3;
     positions[p] = (u - .5) * w;
-    positions[p + 1] = .052 + .018 * Math.sin(u * Math.PI * 8 + v * 5) * Math.sin(v * Math.PI * 2);
+    const edge = Math.max(Math.abs(u - .5) * 2, Math.abs(v - .5) * 2);
+    const folds = abrigo
+      ? .012 * Math.sin(u * Math.PI * 10 + v * 3) + .009 * Math.exp(-(((u - .23) / .09) ** 2))
+      : .009 * Math.sin(u * Math.PI * 7 + v * 4) + .006 * Math.sin(v * Math.PI * 3);
+    positions[p + 1] = .052 + folds * (.35 + edge * .65);
     positions[p + 2] = (v - .5) * d;
     uv[i * 2] = u; uv[i * 2 + 1] = 1 - v;
     if (col < columns - 1 && row < rows - 1) {
@@ -119,44 +131,54 @@ function buildBlanketModel(product, savedState) {
     if (row < rows - 2) link(i, i + columns * 2, .24);
   }
   const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 512;
-  const ctx = canvas.getContext('2d'), tones = ['#b8ad9c', '#8e998b', '#ad8979', '#9a8d7f'];
-  const tone = tones[Math.abs(Number(product.id) || 0) % tones.length];
+  const ctx = canvas.getContext('2d');
+  const tone = abrigo ? '#a8563d' : '#d5d0c5';
   ctx.fillStyle = tone; ctx.fillRect(0, 0, 512, 512);
-  for (let i = 0; i < 32; i += 1) { ctx.strokeStyle = i % 4 === 0 ? 'rgba(255,255,255,.11)' : 'rgba(39,43,37,.035)'; ctx.lineWidth = i % 4 === 0 ? 2 : 1; ctx.beginPath(); ctx.moveTo(0, i * 16); ctx.lineTo(512, i * 16 + 5); ctx.stroke(); ctx.beginPath(); ctx.moveTo(i * 16, 0); ctx.lineTo(i * 16 + 3, 512); ctx.stroke(); }
+  for (let i = 0; i < 40; i += 1) {
+    ctx.strokeStyle = abrigo ? (i % 5 === 0 ? 'rgba(255,220,195,.22)' : 'rgba(77,32,24,.07)') : (i % 5 === 0 ? 'rgba(105,133,143,.25)' : 'rgba(80,72,62,.045)');
+    ctx.lineWidth = i % 5 === 0 ? 2.5 : 1; ctx.beginPath(); ctx.moveTo(0, i * 13); ctx.lineTo(512, i * 13 + (abrigo ? -7 : 5)); ctx.stroke();
+    if (!abrigo && i % 4 === 0) { ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(i * 13, 0); ctx.lineTo(i * 13 + 2, 512); ctx.stroke(); }
+  }
   const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
   const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3)); geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); geometry.setIndex(indices); geometry.computeVertexNormals();
   const material = new THREE.MeshStandardMaterial({ map: texture, roughness: .96, side: THREE.DoubleSide });
   const cloth = new THREE.Mesh(geometry, material); cloth.name = 'Manta dinâmica'; cloth.castShadow = true; cloth.receiveShadow = true;
-  const hemMaterial = new THREE.MeshStandardMaterial({ color: '#756b5f', roughness: .9 });
+  const hemColor = abrigo ? '#713b30' : '#9aa6a4';
   const hem = new THREE.Group(), hemLines = [];
   for (const edge of [-1, 1]) {
     const points = [];
     for (let col = 0; col < columns; col += 1) { const p = (edge < 0 ? col : (rows - 1) * columns + col) * 3; points.push(new THREE.Vector3(positions[p], positions[p + 1] + .003, positions[p + 2])); }
-    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: '#766d61' })); line.raycast = () => {}; hem.add(line); hemLines.push(line);
+    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: hemColor })); line.raycast = () => {}; hem.add(line); hemLines.push(line);
   }
   const group = new THREE.Group(); group.add(cloth, hem);
   cloth.userData.clothSurface = true;
-  group.userData.clothSim = { columns, rows, positions, previous, constraints, hemLines, grabbedIndex: -1, grabTarget: new THREE.Vector3(), geometry, mesh: cloth };
+  group.userData.clothSim = { columns, rows, positions, previous, constraints, hemLines, grabbedIndex: -1, grabTarget: new THREE.Vector3(), geometry, mesh: cloth, airDamping: .986, groundFriction: .76, gravity: 9.81, accumulator: 0, supportSurfaces: [] };
   group.userData.productId = Number(product.id); group.userData.width = w; group.userData.depth = d; group.userData.height = height / 100; group.userData.supportHeight = supportHeight(product) / 100; group.userData.kind = 'textile'; group.userData.productName = product.name;
   group.traverse(object => { if (object.isMesh || object.isLine) object.userData.productId = Number(product.id); });
   return group;
 }
 
+function clothCollisionHeight(sim, x, z) {
+  let height = sim.floorY ?? .028;
+  for (const surface of sim.supportSurfaces || []) if (x >= surface.minX && x <= surface.maxX && z >= surface.minZ && z <= surface.maxZ) height = Math.max(height, surface.y);
+  return height;
+}
+
 function stepCloth(sim, dt) {
   const { positions: p, previous: old, constraints, grabbedIndex, grabTarget, columns, rows } = sim;
-  const dt2 = dt * dt, damping = .992;
+  const dt2 = dt * dt, damping = Math.pow(sim.airDamping ?? .986, dt * 60);
   for (let i = 0; i < columns * rows; i += 1) {
     const j = i * 3;
     if (i === grabbedIndex) { p[j] = grabTarget.x; p[j + 1] = grabTarget.y; p[j + 2] = grabTarget.z; old[j] = p[j]; old[j + 1] = p[j + 1]; old[j + 2] = p[j + 2]; continue; }
     const x = p[j], y = p[j + 1], z = p[j + 2];
     p[j] += (x - old[j]) * damping;
-    p[j + 1] += (y - old[j + 1]) * damping - 9.81 * dt2;
+    p[j + 1] += (y - old[j + 1]) * damping - (sim.gravity ?? 9.81) * dt2;
     p[j + 2] += (z - old[j + 2]) * damping;
     old[j] = x; old[j + 1] = y; old[j + 2] = z;
-    const floorY = sim.floorY ?? .028;
-    if (p[j + 1] < floorY) { p[j + 1] = floorY; old[j + 1] = p[j + 1] + Math.max(0, old[j + 1] - y) * .08; }
+    const contactY = clothCollisionHeight(sim, p[j], p[j + 2]);
+    if (p[j + 1] < contactY) p[j + 1] = contactY;
   }
-  for (let pass = 0; pass < 5; pass += 1) {
+  for (let pass = 0; pass < 7; pass += 1) {
     for (const [a, b, rest, stiffness] of constraints) {
       const ai = a * 3, bi = b * 3, dx = p[bi] - p[ai], dy = p[bi + 1] - p[ai + 1], dz = p[bi + 2] - p[ai + 2];
       const distance = Math.hypot(dx, dy, dz) || .0001, correction = (distance - rest) / distance * stiffness;
@@ -165,8 +187,23 @@ function stepCloth(sim, dt) {
       else if (aPinned) { p[bi] -= dx * correction; p[bi + 1] -= dy * correction; p[bi + 2] -= dz * correction; }
       else { p[ai] += dx * correction; p[ai + 1] += dy * correction; p[ai + 2] += dz * correction; }
     }
-    for (let i = 0; i < columns * rows; i += 1) { const j = i * 3; if (i !== grabbedIndex && p[j + 1] < (sim.floorY ?? .028)) p[j + 1] = sim.floorY ?? .028; }
+    for (let i = 0; i < columns * rows; i += 1) {
+      const j = i * 3;
+      if (i === grabbedIndex) continue;
+      const contactY = clothCollisionHeight(sim, p[j], p[j + 2]);
+      if (p[j + 1] >= contactY) continue;
+      p[j + 1] = contactY;
+      if (pass === 0) {
+        old[j] = p[j] - (p[j] - old[j]) * (sim.groundFriction ?? .76);
+        old[j + 2] = p[j + 2] - (p[j + 2] - old[j + 2]) * (sim.groundFriction ?? .76);
+      }
+      old[j + 1] = contactY;
+    }
   }
+}
+
+function updateClothVisual(sim) {
+  const { positions: p, columns, rows } = sim;
   sim.geometry.attributes.position.needsUpdate = true; sim.geometry.computeVertexNormals();
   sim.hemLines?.forEach((line, edgeIndex) => {
     const attribute = line.geometry.attributes.position, row = edgeIndex === 0 ? 0 : rows - 1;
@@ -213,6 +250,7 @@ function supportHeight(product) {
   const size = dimensions(product), name = norm(product?.name || '');
   if (size.kind === 'table') return /centro|cafe|lateral/.test(name) ? 43 : Math.min(82, size.height);
   if (size.kind === 'storage') return size.height;
+  if (size.kind === 'seating') return Math.min(48, size.height * .48);
   if (size.kind === 'bed') return Math.min(size.height, size.height * .82);
   return 0;
 }
@@ -226,11 +264,33 @@ function findSupport(item, x, z, items, products) {
     if (candidate.uid === item.uid || candidate.supportUid === item.uid) return false;
     const base = products.find(row => Number(row.id) === Number(candidate.productId));
     const baseSize = dimensions(base), top = supportHeight(base);
-    if (!top || !['table', 'storage', 'bed'].includes(baseSize.kind)) return false;
+    if (!top || !['table', 'storage', 'bed', 'seating'].includes(baseSize.kind)) return false;
     const rotated = Number(candidate.rotation) % 180 !== 0;
     const bw = rotated ? baseSize.depth : baseSize.width, bd = rotated ? baseSize.width : baseSize.depth;
     return Number(candidate.elevation || 0) === 0 && Math.abs(x - Number(candidate.x)) <= bw * .46 && Math.abs(z - Number(candidate.z)) <= bd * .46;
   }) || null;
+}
+
+function clothSupportSurfaces(group, item, items, products, roomWidth, roomDepth) {
+  const angle = group.rotation.y, cos = Math.cos(angle), sin = Math.sin(angle);
+  return items.flatMap(baseItem => {
+    if (baseItem.uid === item.uid) return [];
+    const base = products.find(product => Number(product.id) === Number(baseItem.productId));
+    if (!base) return [];
+    const baseSize = dimensions(base);
+    if (!['table', 'storage', 'bed', 'seating'].includes(baseSize.kind)) return [];
+    const top = supportHeight(base) / 100; if (top <= 0) return [];
+    const rotated = Number(baseItem.rotation) % 180 !== 0;
+    const baseWidth = (rotated ? baseSize.depth : baseSize.width) / 100;
+    const baseDepth = (rotated ? baseSize.width : baseSize.depth) / 100;
+    const centerX = Number(baseItem.x) / 100 - roomWidth / 2, centerZ = Number(baseItem.z) / 100 - roomDepth / 2;
+    const corners = [[-1, -1], [-1, 1], [1, -1], [1, 1]].map(([xSign, zSign]) => {
+      const worldX = centerX + xSign * baseWidth / 2 - group.position.x;
+      const worldZ = centerZ + zSign * baseDepth / 2 - group.position.z;
+      return { x: worldX * cos - worldZ * sin, z: worldX * sin + worldZ * cos };
+    });
+    return [{ minX: Math.min(...corners.map(point => point.x)), maxX: Math.max(...corners.map(point => point.x)), minZ: Math.min(...corners.map(point => point.z)), maxZ: Math.max(...corners.map(point => point.z)), y: top - group.position.y + .004 }];
+  });
 }
 
 function woodTexture() {
@@ -354,7 +414,23 @@ function RoomViewport({ width, depth, products, items, selectedId, onSelect, onM
       controls = new OrbitControls(camera, renderer.domElement); controls.target.set(0, mode === '2d' ? 0 : .95, 0); controls.enableDamping = true; controls.dampingFactor = .07; controls.enableRotate = mode === '3d'; controls.enablePan = true; controls.minDistance = 2.8; controls.maxDistance = 18; controls.maxPolarAngle = mode === '2d' ? .001 : Math.PI * .47; controls.minPolarAngle = mode === '2d' ? .001 : .16; controlsRef.current = controls;
       const resize = () => { if (!mount.clientWidth || !mount.clientHeight) return; renderer.setSize(mount.clientWidth, mount.clientHeight); camera.aspect = mount.clientWidth / mount.clientHeight; if (camera.isOrthographicCamera) { const aspect = camera.aspect, size = Math.max(roomSize.width, roomSize.depth) * 1.20; camera.left = -size * aspect / 2; camera.right = size * aspect / 2; camera.top = size / 2; camera.bottom = -size / 2; } camera.updateProjectionMatrix(); };
       const observer = new ResizeObserver(resize); observer.observe(mount);
-      const animate = () => { frame = requestAnimationFrame(animate); controls.update(); for (const group of groupsRef.current.values()) if (group.userData.clothSim) { stepCloth(group.userData.clothSim, 1 / 60); stepCloth(group.userData.clothSim, 1 / 60); } renderer.render(scene, camera); }; animate();
+      let lastFrameTime = 0;
+      const physicsStep = 1 / 60;
+      const animate = now => {
+        frame = requestAnimationFrame(animate); controls.update();
+        const frameDelta = lastFrameTime ? Math.min(.05, Math.max(0, (now - lastFrameTime) / 1000)) : physicsStep;
+        lastFrameTime = now;
+        for (const group of groupsRef.current.values()) {
+          const sim = group.userData.clothSim; if (!sim) continue;
+          sim.accumulator = Math.min(.12, sim.accumulator + frameDelta);
+          let steps = 0;
+          while (sim.accumulator >= physicsStep && steps < 4) { stepCloth(sim, physicsStep); sim.accumulator -= physicsStep; steps += 1; }
+          if (steps === 4) sim.accumulator = Math.min(sim.accumulator, physicsStep);
+          if (steps) updateClothVisual(sim);
+        }
+        renderer.render(scene, camera);
+      };
+      frame = requestAnimationFrame(animate);
       const pointer = new THREE.Vector2(), ray = new THREE.Raycaster(), floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit = new THREE.Vector3(); ray.params.Line.threshold = .01;
       const coords = event => { const rect = renderer.domElement.getBoundingClientRect(); pointer.set(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1); ray.setFromCamera(pointer, camera); };
       const down = event => {
@@ -374,10 +450,39 @@ function RoomViewport({ width, depth, products, items, selectedId, onSelect, onM
         const grabPlane = clothIndex >= 0 ? new THREE.Plane(new THREE.Vector3(0, 1, 0), -grabPlaneY) : floorPlane;
         if (!ray.ray.intersectPlane(grabPlane, hit)) { if (clothIndex >= 0) cloth.grabbedIndex = -1; controls.enabled = true; return; }
         const screenRight = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0); screenRight.y = 0; screenRight.normalize();
+        const screenUp = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 1); screenUp.y = 0; screenUp.normalize();
         const horizontalWorldPerPixel = camera.isPerspectiveCamera ? 2 * camera.position.distanceTo(controls.target) * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) / renderer.domElement.clientHeight : (camera.top - camera.bottom) / renderer.domElement.clientHeight;
-        dragRef.current = { instanceId, productId: Number(productId), group, cloth, clothIndex, clothStartY: clothIndex >= 0 ? cloth.positions[clothIndex * 3 + 1] : 0, grabPlaneY, screenRight, horizontalWorldPerPixel, startGroupX: group.position.x, startGroupZ: group.position.z, offsetX: group.position.x - hit.x, offsetZ: group.position.z - hit.z, startX: event.clientX, startY: event.clientY, moved: false }; renderer.domElement.setPointerCapture?.(event.pointerId); event.preventDefault();
+        dragRef.current = { instanceId, productId: Number(productId), group, cloth, clothIndex, clothStartY: clothIndex >= 0 ? cloth.positions[clothIndex * 3 + 1] : 0, grabPlaneY, screenRight, screenUp, horizontalWorldPerPixel, startGroupX: group.position.x, startGroupZ: group.position.z, offsetX: group.position.x - hit.x, offsetZ: group.position.z - hit.z, startX: event.clientX, startY: event.clientY, moved: false }; renderer.domElement.setPointerCapture?.(event.pointerId); event.preventDefault();
       };
-      const move = event => { const drag = dragRef.current; if (!drag) return; coords(event); const lift = drag.clothIndex >= 0 ? Math.max(-.02, (drag.startY - event.clientY) * .009) : 0; if (drag.clothIndex < 0 && !ray.ray.intersectPlane(floorPlane, hit)) return; const d = dimensions(propsRef.current.products.find(p => Number(p.id) === drag.productId)); const roomW = Number(propsRef.current.width) / 100, roomD = Number(propsRef.current.depth) / 100; const rotated = ((propsRef.current.items.find(item => item.uid === drag.instanceId)?.rotation || 0) % 180) !== 0; const fw = (rotated ? d.depth : d.width) / 100, fd = (rotated ? d.width : d.depth) / 100; const dx = event.clientX - drag.startX; const desiredX = drag.clothIndex >= 0 ? drag.startGroupX + dx * drag.horizontalWorldPerPixel * drag.screenRight.x : hit.x + drag.offsetX; const desiredZ = drag.clothIndex >= 0 ? drag.startGroupZ + dx * drag.horizontalWorldPerPixel * drag.screenRight.z : hit.z + drag.offsetZ; const x = THREE.MathUtils.clamp(desiredX, -roomW / 2 + fw / 2, roomW / 2 - fw / 2), z = THREE.MathUtils.clamp(desiredZ, -roomD / 2 + fd / 2, roomD / 2 - fd / 2); drag.group.position.x = x; drag.group.position.z = z; const item = propsRef.current.items.find(row => row.uid === drag.instanceId); const support = item && findSupport(item, Math.round((x + roomW / 2) * 100), Math.round((z + roomD / 2) * 100), propsRef.current.items, propsRef.current.products); drag.group.position.y = support ? supportHeight(propsRef.current.products.find(p => Number(p.id) === Number(support.productId))) / 100 : 0; drag.supportUid = support?.uid || null; drag.elevation = support ? supportHeight(propsRef.current.products.find(p => Number(p.id) === Number(support.productId))) : 0; if (drag.clothIndex >= 0) drag.cloth.grabTarget.y = Math.max(drag.cloth.floorY ?? .028, drag.clothStartY + lift); drag.moved ||= Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 4; };
+      const move = event => {
+        const drag = dragRef.current; if (!drag) return;
+        coords(event);
+        const dx = event.clientX - drag.startX, dy = event.clientY - drag.startY;
+        const lift = drag.clothIndex >= 0 ? THREE.MathUtils.clamp(-dy * .005, -.03, .85) : 0;
+        if (drag.clothIndex < 0 && !ray.ray.intersectPlane(floorPlane, hit)) return;
+        const d = dimensions(propsRef.current.products.find(product => Number(product.id) === drag.productId));
+        const roomW = Number(propsRef.current.width) / 100, roomD = Number(propsRef.current.depth) / 100;
+        const rotated = ((propsRef.current.items.find(item => item.uid === drag.instanceId)?.rotation || 0) % 180) !== 0;
+        const fw = (rotated ? d.depth : d.width) / 100, fd = (rotated ? d.width : d.depth) / 100;
+        const screenDeltaX = dx * drag.screenRight.x - dy * drag.screenUp.x;
+        const screenDeltaZ = dx * drag.screenRight.z - dy * drag.screenUp.z;
+        const desiredX = drag.clothIndex >= 0 ? drag.startGroupX + screenDeltaX * drag.horizontalWorldPerPixel : hit.x + drag.offsetX;
+        const desiredZ = drag.clothIndex >= 0 ? drag.startGroupZ + screenDeltaZ * drag.horizontalWorldPerPixel : hit.z + drag.offsetZ;
+        const x = THREE.MathUtils.clamp(desiredX, -roomW / 2 + fw / 2, roomW / 2 - fw / 2);
+        const z = THREE.MathUtils.clamp(desiredZ, -roomD / 2 + fd / 2, roomD / 2 - fd / 2);
+        drag.group.position.x = x; drag.group.position.z = z;
+        const item = propsRef.current.items.find(row => row.uid === drag.instanceId);
+        const support = item && findSupport(item, Math.round((x + roomW / 2) * 100), Math.round((z + roomD / 2) * 100), propsRef.current.items, propsRef.current.products);
+        drag.group.position.y = support ? supportHeight(propsRef.current.products.find(product => Number(product.id) === Number(support.productId))) / 100 : 0;
+        drag.supportUid = support?.uid || null;
+        drag.elevation = support ? supportHeight(propsRef.current.products.find(product => Number(product.id) === Number(support.productId))) : 0;
+        if (drag.clothIndex >= 0) {
+          drag.cloth.floorY = .028 - drag.group.position.y;
+          if (item) drag.cloth.supportSurfaces = clothSupportSurfaces(drag.group, item, propsRef.current.items, propsRef.current.products, roomW, roomD);
+          drag.cloth.grabTarget.y = Math.max(clothCollisionHeight(drag.cloth, drag.cloth.grabTarget.x, drag.cloth.grabTarget.z) + .003, drag.clothStartY + lift);
+        }
+        drag.moved ||= Math.hypot(dx, dy) > 4;
+      };
       const up = () => { const drag = dragRef.current; if (!drag) return; dragRef.current = null; if (drag.clothIndex >= 0) { drag.cloth.grabbedIndex = -1; clothStatesRef.current.set(drag.instanceId, snapshotCloth(drag.cloth)); } controls.enabled = true; if (drag.moved) propsRef.current.onMove(drag.instanceId, Math.round((drag.group.position.x + Number(propsRef.current.width) / 200) * 100), Math.round((drag.group.position.z + Number(propsRef.current.depth) / 200) * 100), drag.elevation || 0, drag.supportUid || null); };
       renderer.domElement.addEventListener('pointerdown', down); renderer.domElement.addEventListener('pointermove', move); renderer.domElement.addEventListener('pointerup', up); renderer.domElement.addEventListener('pointercancel', up);
       renderer.domElement.addEventListener('wheel', event => { if (event.ctrlKey || event.metaKey) { event.preventDefault(); const next = THREE.MathUtils.clamp((propsRef.current.zoom || 1) + (event.deltaY < 0 ? .08 : -.08), .65, 1.8); propsRef.current.onZoom(next); } }, { passive: false });
@@ -396,8 +501,8 @@ function RoomViewport({ width, depth, products, items, selectedId, onSelect, onM
     items.forEach(item => {
       const product = products.find(p => Number(p.id) === Number(item.productId)); if (!product) return;
       const id = item.uid || `piece-${item.productId}`, group = isSoftBlanket(product) ? buildBlanketModel(product, clothStatesRef.current.get(id)) : buildModel(product);
-      if (group.userData.clothSim) group.userData.clothSim.floorY = Number(item.elevation || 0) > 0 ? .006 : .028;
       group.position.set(Number(item.x) / 100 - roomW / 2, Number(item.elevation || 0) / 100, Number(item.z) / 100 - roomD / 2); group.rotation.y = THREE.MathUtils.degToRad(Number(item.rotation) || 0);
+      if (group.userData.clothSim) group.userData.clothSim.floorY = .028 - group.position.y;
       group.userData.instanceId = id;
       group.traverse(object => { object.userData.instanceId = id; });
       scene.add(group); groupsRef.current.set(id, group);
@@ -410,6 +515,12 @@ function RoomViewport({ width, depth, products, items, selectedId, onSelect, onM
         setModelSelection(model, id, propsRef.current.selectedId);
       }).catch(() => { /* Fica o modelo de reserva se o GLB não estiver disponível. */ });
     });
+    for (const item of items) {
+      const group = groupsRef.current.get(item.uid || `piece-${item.productId}`), sim = group?.userData.clothSim;
+      if (!sim) continue;
+      sim.floorY = .028 - group.position.y;
+      sim.supportSurfaces = clothSupportSurfaces(group, item, items, products, roomW, roomD);
+    }
     if (cameraRef.current) { cameraRef.current.zoom = zoom; cameraRef.current.updateProjectionMatrix(); }
     return () => {
       active = false;

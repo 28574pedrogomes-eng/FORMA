@@ -7,9 +7,9 @@ from mathutils import Vector
 
 ARGS = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
 ROOT = os.path.abspath(ARGS[0] if ARGS else '.')
-OUT = os.path.join(ROOT, 'output', 'model-previews')
+OUT = os.path.abspath(ARGS[1]) if len(ARGS) > 1 else os.path.join(ROOT, 'output', 'model-previews')
 os.makedirs(OUT, exist_ok=True)
-SLUGS = ['cadeira-arco', 'sofa-brisa', 'poltrona-trama', 'candeeiro-de-secretaria-foco']
+SLUGS = ARGS[2:] or ['cadeira-arco', 'sofa-brisa', 'poltrona-trama', 'candeeiro-de-secretaria-foco']
 
 
 def render(slug):
