@@ -77,13 +77,14 @@ export function StoreProvider({ children }) {
     return () => { alive = false; window.removeEventListener('focus', focus); };
   }, [user?.id, sessionLoading]);
   useEffect(() => { if (!user) { setNotifications([]); return; } refreshNotifications(); const interval = setInterval(refreshNotifications, 45000); return () => clearInterval(interval); }, [user?.id]);
-  const addToCart = product => {
+  const addToCart = (product, requestedQuantity = 1) => {
+    const quantity = Math.max(1, Math.floor(Number(requestedQuantity) || 1));
     const entry = { ...product, variant_id: product.variant_id ?? product.default_variant_id ?? null };
     const key = cartKey(entry); const current = cart.find(p => cartKey(p) === key);
-    if ((current?.quantity || 0) >= Math.min(99, Number(entry.stock))) { notify('Já atingiste o stock disponível desta opção.'); return; }
+    if ((current?.quantity || 0) + quantity > Math.min(99, Number(entry.stock))) { notify('A quantidade pedida ultrapassa o stock disponível.'); return; }
     if (!current && cart.length >= 50) { notify('O carrinho pode ter até 50 opções diferentes.'); return; }
-    setCart(items => current ? items.map(p => cartKey(p) === key ? { ...entry, quantity: p.quantity + 1 } : p) : [...items, { ...entry, quantity: 1 }]);
-    notify(`${product.name} adicionado ao carrinho.`);
+    setCart(items => current ? items.map(p => cartKey(p) === key ? { ...entry, quantity: p.quantity + quantity } : p) : [...items, { ...entry, quantity }]);
+    notify(quantity > 1 ? `${quantity} × ${product.name} adicionado ao carrinho.` : `${product.name} adicionado ao carrinho.`);
   };
   async function toggleFavorite(id) {
     id = Number(id); if (favoriteSync || favoritePending.current.has(id)) return;

@@ -45,6 +45,7 @@ body:not(:has(.admin-layout)) .eyebrow { font-size: 11px; letter-spacing: 1.8px;
 .category-tabs>button { border: 1px solid var(--forma-line); background: transparent; color: var(--forma-muted); font-size: 13px; padding: 11px 16px; border-radius: 3px; }
 .category-tabs>button.active { border-color: var(--forma-accent); }
 .filter-toggle { font-size: 13px; padding: 12px; border: 1px solid var(--forma-line); border-radius: 3px; flex-shrink: 0; }
+.filter-count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; margin-left: 2px; padding-inline: 5px; border-radius: 50%; background: var(--forma-green, #344b38); color: #fff; font-size: 10px; font-weight: 600; }
 .catalog-search-row { padding-block: 24px 28px; }
 .catalog-search { width: min(400px, 100%); border: 1px solid var(--forma-line); background: #fff; padding: 12px 14px; border-radius: 3px; }
 .catalog-search input { font-size: 13px; }

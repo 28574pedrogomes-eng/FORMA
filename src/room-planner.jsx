@@ -3,15 +3,18 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { Armchair, ArrowLeft, Check, ChevronDown, Copy, Grid2X2, Home, Lamp, Layers, Maximize2, Minus, Move3D, Plus, RotateCw, Save, Search, Sofa, Trash2, X } from 'lucide-react';
+import { Armchair, ArrowLeft, Check, ChevronDown, Copy, Crosshair, ExternalLink, Grid2X2, HelpCircle, Home, Lamp, Layers, Maximize2, Minus, Move3D, Plus, RotateCw, Ruler, Save, Search, ShoppingBag, Sofa, Trash2, X } from 'lucide-react';
 import { api, money } from './api';
+import { useStore } from './context';
 import { ErrorNotice, Loading } from './ui';
 import './room-planner.css';
 
 const STORAGE_KEY = 'forma-room-projects-v1';
+const DRAFT_KEY = 'forma-room-draft-v1';
 const productModelLoader = new GLTFLoader();
 const productModelCache = new Map();
 const safeRead = () => { try { const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); return Array.isArray(value) ? value : []; } catch { return []; } };
+const safeReadDraft = () => { try { const value = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); return value && typeof value === 'object' ? value : null; } catch { return null; } };
 const norm = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 const kindOf = product => {
   const text = norm(`${product?.category_name || ''} ${product?.name || ''}`);
@@ -325,7 +328,7 @@ function addRoom(scene, widthCm, depthCm) {
   return { width: w, depth: d, height: h };
 }
 
-function RoomViewport({ width, depth, products, items, selectedId, onSelect, onMove, mode, zoom, onZoom }) {
+function RoomViewport({ width, depth, products, items, selectedId, onSelect, onMove, mode, zoom, onZoom, cameraResetKey }) {
   const mountRef = useRef(null), sceneRef = useRef(null), cameraRef = useRef(null), rendererRef = useRef(null), controlsRef = useRef(null), groupsRef = useRef(new Map()), clothStatesRef = useRef(new Map()), dragRef = useRef(null), propsRef = useRef({});
   propsRef.current = { items, products, selectedId, onSelect, onMove, width, depth, mode, onZoom };
   const rememberCloth = () => { for (const [id, group] of groupsRef.current) if (group.userData.clothSim) clothStatesRef.current.set(id, snapshotCloth(group.userData.clothSim)); };
@@ -420,6 +423,8 @@ function RoomViewport({ width, depth, products, items, selectedId, onSelect, onM
     for (const [id, group] of groupsRef.current) setModelSelection(group, id, selectedId);
   }, [selectedId, items, products]);
 
+  useEffect(() => { controlsRef.current?.reset(); }, [cameraResetKey, mode]);
+
   if (mode === '2d') return <RoomPlan2D width={width} depth={depth} products={products} items={items} selectedId={selectedId} onSelect={onSelect} onMove={onMove} zoom={zoom} />;
   return <div className="room-viewport" ref={mountRef} role="application" aria-label="Vista 3D interativa da divisão. Arrasta os móveis para os posicionar.">
     <div className="room-size-tags" aria-hidden="true"><span><i />{width} cm</span><span>{depth} cm<i /></span>
@@ -508,17 +513,20 @@ const categories = [
 ];
 
 export function RoomPlanner({ onProduct }) {
-  const [catalog, setCatalog] = useState([]), [error, setError] = useState(''), [loading, setLoading] = useState(true);
-  const [widthInput, setWidthInput] = useState('400'), [depthInput, setDepthInput] = useState('350');
-  const [name, setName] = useState('A minha divisão'), [width, setWidth] = useState(400), [depth, setDepth] = useState(350), [budget, setBudget] = useState(1000);
-  const [items, setItems] = useState([]), [projects, setProjects] = useState(safeRead), [notice, setNotice] = useState('');
+  const [draft] = useState(safeReadDraft);
+  const { addToCart, setCartOpen } = useStore();
+  const [catalog, setCatalog] = useState([]), [error, setError] = useState(''), [loading, setLoading] = useState(true), [retryCatalog, setRetryCatalog] = useState(0);
+  const [widthInput, setWidthInput] = useState(String(draft?.width || 400)), [depthInput, setDepthInput] = useState(String(draft?.depth || 350));
+  const [name, setName] = useState(String(draft?.name || 'A minha divisão')), [width, setWidth] = useState(Math.max(180, Math.min(1200, Number(draft?.width) || 400))), [depth, setDepth] = useState(Math.max(180, Math.min(1200, Number(draft?.depth) || 350))), [budget, setBudget] = useState(Math.max(0, Number(draft?.budget) || 1000));
+  const [items, setItems] = useState(Array.isArray(draft?.items) ? draft.items : []), [projects, setProjects] = useState(safeRead), [notice, setNotice] = useState('');
   const [query, setQuery] = useState(''), [category, setCategory] = useState('all'), [panel, setPanel] = useState('catalog'), [mode, setMode] = useState('3d'), [zoom, setZoom] = useState(1), [selectedId, setSelectedId] = useState(null);
+  const [projectId, setProjectId] = useState(draft?.projectId || null), [autoSaveState, setAutoSaveState] = useState(draft ? 'saved' : 'saving'), [helpOpen, setHelpOpen] = useState(false), [cameraResetKey, setCameraResetKey] = useState(0);
   const [projectMenu, setProjectMenu] = useState(false), initializedRef = useRef(false);
   const chosen = useMemo(() => items.map(item => ({ item, product: catalog.find(p => Number(p.id) === Number(item.productId)) })).filter(row => row.product), [items, catalog]);
   const total = chosen.reduce((sum, row) => sum + Number(row.product.price_cents), 0);
   const products = useMemo(() => catalog.filter(product => (category === 'all' || kindOf(product) === category) && norm(`${product.name} ${product.material} ${product.category_name}`).includes(norm(query))).slice(0, 60), [catalog, category, query]);
 
-  useEffect(() => { const controller = new AbortController(); api('/products', { params: { per_page: 100 }, signal: controller.signal }).then(result => setCatalog(result.items || [])).catch(e => { if (e.name !== 'AbortError') setError(e.message); }).finally(() => { if (!controller.signal.aborted) setLoading(false); }); return () => controller.abort(); }, []);
+  useEffect(() => { const controller = new AbortController(); setLoading(true); setError(''); api('/products', { params: { per_page: 100 }, signal: controller.signal }).then(result => setCatalog(result.items || [])).catch(e => { if (e.name !== 'AbortError') setError(e.message); }).finally(() => { if (!controller.signal.aborted) setLoading(false); }); return () => controller.abort(); }, [retryCatalog]);
   useEffect(() => {
     if (!catalog.length) return;
     const pending = localStorage.getItem('forma_planner_pending'); if (pending) { const product = catalog.find(p => Number(p.id) === Number(pending)); if (product) addProduct(product); localStorage.removeItem('forma_planner_pending'); }
@@ -527,6 +535,15 @@ export function RoomPlanner({ onProduct }) {
   }, [catalog]);
   useEffect(() => { const handler = () => { const pending = localStorage.getItem('forma_planner_pending'); const product = catalog.find(p => Number(p.id) === Number(pending)); if (product) { addProduct(product); localStorage.removeItem('forma_planner_pending'); } }; window.addEventListener('forma:planner-add', handler); return () => window.removeEventListener('forma:planner-add', handler); }, [catalog, width, depth, items]);
   useEffect(() => { const onKey = event => { if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return; if (event.key === 'Delete' && selectedId) removeProduct(selectedId); if (event.key.toLowerCase() === 'r' && selectedId) rotateProduct(selectedId); if (event.key === 'Escape') setSelectedId(null); }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, [selectedId, items]);
+  useEffect(() => {
+    if (!initializedRef.current) return undefined;
+    setAutoSaveState('saving');
+    const timer = window.setTimeout(() => {
+      try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ name, width, depth, budget, items, projectId, updatedAt: new Date().toISOString() })); setAutoSaveState('saved'); }
+      catch { setAutoSaveState('error'); }
+    }, 450);
+    return () => window.clearTimeout(timer);
+  }, [name, width, depth, budget, items, projectId]);
 
   const addProduct = useCallback(product => {
     const size = dimensions(product), roomWidth = Number(width), roomDepth = Number(depth), gap = 10;
@@ -561,13 +578,16 @@ export function RoomPlanner({ onProduct }) {
     const dx = fitted.x - Number(moving.x), dz = fitted.z - Number(moving.z);
     return current.map(item => item.uid === instanceId ? { ...fitted, supportUid: support?.uid || null, elevation } : item.supportUid === instanceId ? fitItem({ ...item, x: Number(item.x) + dx, z: Number(item.z) + dz }, width, depth) : item);
   }); }
-  function saveProject() { const project = { id: makeUid(), name: name.trim() || 'Projeto sem nome', width: Number(width), depth: Number(depth), budget: Number(budget), items: items.map(({ productId, uid, x, z, rotation, elevation, supportUid }) => ({ productId, uid, x, z, rotation, elevation: elevation || 0, supportUid: supportUid || null })), productIds: items.map(item => item.productId), updatedAt: new Date().toISOString() }; const next = [project, ...projects.filter(row => row.name !== project.name)].slice(0, 20); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); setProjects(next); setNotice('Projeto guardado neste navegador.'); }
-  function openProject(project) { setName(project.name); setWidth(Math.max(180,Math.min(1200,Number(project.width)||400))); setDepth(Math.max(180,Math.min(1200,Number(project.depth)||350))); setBudget(Math.max(0,Math.min(100000,Number(project.budget)||1000))); const rows = project.items || project.productIds.map((productId, i) => { const product = catalog.find(p => Number(p.id) === Number(productId)); const d = dimensions(product); return { productId: Number(productId), uid: makeUid(), x: 80 + d.width / 2 + (i % 2) * 100, z: 80 + d.depth / 2 + Math.floor(i / 2) * 100, rotation: 0 }; }); setItems(rows.map(item => ({ ...item, uid: item.uid || makeUid() }))); setSelectedId(null); setProjectMenu(false); setNotice(`Projeto “${project.name}” aberto.`); }
+  function saveProject() { const project = { id: projectId || makeUid(), name: name.trim() || 'Projeto sem nome', width: Number(width), depth: Number(depth), budget: Number(budget), items: items.map(({ productId, uid, x, z, rotation, elevation, supportUid }) => ({ productId, uid, x, z, rotation, elevation: elevation || 0, supportUid: supportUid || null })), productIds: items.map(item => item.productId), updatedAt: new Date().toISOString() }; const next = [project, ...projects.filter(row => row.id !== project.id && row.name !== project.name)].slice(0, 20); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); localStorage.setItem(DRAFT_KEY, JSON.stringify({ name: project.name, width, depth, budget, items: project.items, projectId: project.id, updatedAt: project.updatedAt })); setProjectId(project.id); setProjects(next); setAutoSaveState('saved'); setNotice('Projeto guardado neste navegador.'); }
+  function addProjectToCart() { if (!shoppingLines.length) return; shoppingLines.forEach(line => addToCart(line.product, line.quantity)); setCartOpen(true); }
+  function openProject(project) { setProjectId(project.id || null); setName(project.name); setWidth(Math.max(180,Math.min(1200,Number(project.width)||400))); setDepth(Math.max(180,Math.min(1200,Number(project.depth)||350))); setBudget(Math.max(0,Math.min(100000,Number(project.budget)||1000))); const rows = project.items || project.productIds.map((productId, i) => { const product = catalog.find(p => Number(p.id) === Number(productId)); const d = dimensions(product); return { productId: Number(productId), uid: makeUid(), x: 80 + d.width / 2 + (i % 2) * 100, z: 80 + d.depth / 2 + Math.floor(i / 2) * 100, rotation: 0 }; }); setItems(rows.map(item => ({ ...item, uid: item.uid || makeUid() }))); setSelectedId(null); setProjectMenu(false); setNotice(`Projeto “${project.name}” aberto.`); }
   function shareProject(project) { const payload = { name: project.name, width: project.width, depth: project.depth, budget: project.budget, items: project.items, productIds: project.productIds }; const bytes = new TextEncoder().encode(JSON.stringify(payload)); let binary = ''; bytes.forEach(byte => { binary += String.fromCharCode(byte); }); const token = btoa(binary); const link = `${location.origin}${location.pathname}#planner?project=${encodeURIComponent(token)}`; if (navigator.clipboard?.writeText) navigator.clipboard.writeText(link).then(() => setNotice('Link do projeto copiado.')).catch(() => setNotice(link)); else setNotice(link); }
-  function deleteProject(id) { const next = projects.filter(project => project.id !== id); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); setProjects(next); }
+  function deleteProject(id) { const next = projects.filter(project => project.id !== id); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); setProjects(next); if (projectId === id) setProjectId(null); }
   useEffect(() => {
     if (!catalog.length || initializedRef.current) return;
     initializedRef.current = true;
+    if (new URLSearchParams(location.hash.split('?')[1] || '').has('project')) return;
+    if (draft) { setNotice('Última divisão recuperada automaticamente.'); return; }
     const latest = projects[0];
     if (latest && (latest.items?.length || latest.productIds?.length)) { openProject(latest); return; }
     const starter = catalog.find(product => /sofa|poltrona/.test(norm(product.name)));
@@ -575,6 +595,33 @@ export function RoomPlanner({ onProduct }) {
   }, [catalog]);
   const selected = chosen.find(row => row.item.uid === selectedId);
   const overlapIds = findOverlappingItems(items, catalog);
+  const selectedSize = selected ? dimensions(selected.product) : null;
+  const selectedRotated = Number(selected?.item.rotation) % 180 !== 0;
+  const selectedWidth = selectedSize ? (selectedRotated ? selectedSize.depth : selectedSize.width) : 0;
+  const selectedDepth = selectedSize ? (selectedRotated ? selectedSize.width : selectedSize.depth) : 0;
+  const wallClearance = selected ? {
+    esquerda: Math.max(0, Math.round(Number(selected.item.x) - selectedWidth / 2)),
+    direita: Math.max(0, Math.round(Number(width) - Number(selected.item.x) - selectedWidth / 2)),
+    janela: Math.max(0, Math.round(Number(selected.item.z) - selectedDepth / 2)),
+    oposta: Math.max(0, Math.round(Number(depth) - Number(selected.item.z) - selectedDepth / 2))
+  } : null;
+  const overlappingItems = selected ? chosen.filter(row => row.item.uid !== selected.item.uid && overlapIds.has(row.item.uid) && overlapIds.has(selected.item.uid) && row.item.supportUid !== selected.item.uid && selected.item.supportUid !== row.item.uid).map(row => row.item) : [];
+  const shoppingLines = useMemo(() => {
+    const lines = new Map();
+    chosen.forEach(row => {
+      const key = String(row.product.id), line = lines.get(key) || { product: row.product, quantity: 0 };
+      line.quantity += 1; lines.set(key, line);
+    });
+    return [...lines.values()].map(line => ({ ...line, subtotal: Number(line.product.price_cents) * line.quantity }));
+  }, [chosen]);
+  const floorArea = Number(width) * Number(depth) / 10000;
+  const occupiedArea = items.reduce((sum, item) => {
+    if (item.supportUid) return sum;
+    const product = catalog.find(row => Number(row.id) === Number(item.productId));
+    if (!product) return sum;
+    const size = dimensions(product);
+    return sum + size.width * size.depth / 10000;
+  }, 0);
   const fitItem = (item, roomWidth, roomDepth) => {
     const product = catalog.find(row => Number(row.id) === Number(item.productId)); if (!product) return item;
     const size = dimensions(product), rotated = Number(item.rotation) % 180 !== 0;
@@ -596,25 +643,26 @@ export function RoomPlanner({ onProduct }) {
       <a className="planner-back" href="#collection" aria-label="Voltar à coleção"><ArrowLeft size={18}/><span>forma</span></a>
       <div className="planner-project-title"><span>Planeador de divisão</span><button onClick={() => setProjectMenu(value => !value)} aria-expanded={projectMenu}>{name}<ChevronDown size={15}/></button>{projectMenu && <div className="planner-project-menu"><label>Nome do projeto<input value={name} maxLength={80} onChange={event => setName(event.target.value)}/></label>{projects.length > 0 && <div className="planner-project-list"><b>Projetos guardados</b>{projects.map(project => <div className="planner-project-entry" key={project.id}><button onClick={() => openProject(project)}>{project.name}<small>{project.width} × {project.depth} cm</small></button><button aria-label={`Copiar link do projeto ${project.name}`} title="Copiar ligação" onClick={() => shareProject(project)}><Copy size={14}/></button><button aria-label={`Eliminar projeto ${project.name}`} title="Eliminar projeto" onClick={() => deleteProject(project.id)}><Trash2 size={14}/></button></div>)}</div>}</div>}</div>
       <div className="planner-view-switch" role="group" aria-label="Modo de visualização"><button className={mode === '2d' ? 'active' : ''} onClick={() => setMode('2d')}>2D</button><button className={mode === '3d' ? 'active' : ''} onClick={() => setMode('3d')}>3D</button></div>
-      <div className="planner-top-actions"><span className="planner-save-state"><Check size={14}/>Neste navegador</span><button className="planner-save-button" onClick={saveProject}><Save size={16}/><span>Guardar</span></button></div>
+      <div className="planner-top-actions"><span className={`planner-save-state is-${autoSaveState}`} aria-live="polite">{autoSaveState === 'saving' ? <><span className="planner-save-dot"/>A guardar…</> : autoSaveState === 'error' ? 'Não foi possível guardar' : <><Check size={14}/>Guardado automaticamente</>}</span><button className="planner-save-button" aria-label="Guardar projeto" onClick={saveProject}><Save size={16}/><span>Guardar</span></button></div>
     </header>
 
     <section className="planner-stage" aria-label="Editor de divisão">
-      <RoomViewport width={width} depth={depth} products={catalog} items={items} selectedId={selectedId} onSelect={setSelectedId} onMove={moveProduct} mode={mode} zoom={zoom} onZoom={setZoom}/>
+      <RoomViewport width={width} depth={depth} products={catalog} items={items} selectedId={selectedId} onSelect={setSelectedId} onMove={moveProduct} mode={mode} zoom={zoom} onZoom={setZoom} cameraResetKey={cameraResetKey}/>
       <div className="planner-stage-heading"><span>{mode === '3d' ? 'Vista 3D' : 'Planta 2D'}</span><b>{width} × {depth} cm</b></div>
       {mode === '3d' && selected && isSoftBlanket(selected.product) && <div className="planner-cloth-hint" role="status"><Move3D size={15}/>Segura a manta e arrasta para cima; solta para a deixar cair.</div>}
-      <div className="planner-tool-rail" aria-label="Ferramentas"><button className={panel === 'catalog' ? 'active' : ''} aria-label="Abrir catálogo" title="Catálogo" onClick={() => setPanel('catalog')}><Grid2X2 size={19}/></button><button className={panel === 'room' ? 'active' : ''} aria-label="Definições da divisão" title="Definições da divisão" onClick={() => setPanel('room')}><Home size={19}/></button><button aria-label="Ajustar zoom" title="Ajustar zoom" onClick={() => setZoom(1)}><Maximize2 size={18}/></button></div>
+      <div className="planner-tool-rail" aria-label="Ferramentas"><button className={panel === 'catalog' ? 'active' : ''} aria-label="Abrir catálogo" title="Catálogo" onClick={() => setPanel('catalog')}><Grid2X2 size={19}/></button><button className={panel === 'room' ? 'active' : ''} aria-label="Definições da divisão" title="Definições da divisão" onClick={() => setPanel('room')}><Home size={19}/></button><button aria-label="Repor câmara" title="Repor câmara" onClick={() => { setZoom(1); setCameraResetKey(value => value + 1); }}><Crosshair size={18}/></button><button aria-label="Controlos do planeador" title="Controlos" aria-expanded={helpOpen} onClick={() => setHelpOpen(value => !value)}><HelpCircle size={18}/></button></div>
+      {helpOpen && <div className="planner-help-popover" role="dialog" aria-label="Controlos do planeador"><b>Como organizar a divisão</b><span><Move3D size={14}/>Arrasta uma peça com o rato ou dedo para a mover.</span><span><Layers size={14}/>Solta uma peça pequena sobre uma mesa para a empilhar.</span><span><RotateCw size={14}/>Seleciona e usa R para rodar; Delete remove.</span><span><Ruler size={14}/>As medidas e distâncias aparecem na seleção.</span><button onClick={() => setHelpOpen(false)}>Fechar</button></div>}
 
       <aside className={`planner-side-panel ${panel === 'room' ? 'room-settings-open' : ''} ${panel === 'closed' ? 'is-closed' : ''}`}>
         <div className="planner-panel-header"><div><span>{panel === 'catalog' ? 'CATÁLOGO FORMA' : 'A DIVISÃO'}</span><h1>{panel === 'catalog' ? 'Escolhe as peças' : 'Medidas e orçamento'}</h1></div><button aria-label="Fechar painel" onClick={() => setPanel('closed')}><X size={19}/></button></div>
         {panel === 'catalog' ? <>
           <label className="planner-search"><Search size={17}/><input aria-label="Pesquisar no catálogo" placeholder="Pesquisar móveis" value={query} onChange={event => setQuery(event.target.value)}/><span>/</span></label>
           <div className="planner-category-tabs" role="tablist" aria-label="Categorias do catálogo">{categories.map(entry => { const Icon = entry.icon; return <button role="tab" aria-selected={category === entry.key} className={category === entry.key ? 'active' : ''} key={entry.key} onClick={() => setCategory(entry.key)}><Icon size={15}/>{entry.label}</button>; })}</div>
-          {loading ? <Loading label="A carregar o catálogo"/> : error ? <ErrorNotice message={error}/> : <div className="planner-catalog-grid">{products.map(product => <article className="planner-catalog-card" key={product.id}><button className="planner-card-photo" aria-label={`Ver ${product.name}`} onClick={() => onProduct(product)}><img src={product.image} alt={product.name} loading="lazy"/></button><div className="planner-card-details"><div><b>{product.name}</b><span>{product.width_cm && product.depth_cm ? `${product.width_cm} × ${product.depth_cm} cm` : product.material || product.category_name}</span></div><strong>{money(product.price_cents)}</strong><button aria-label={`Adicionar ${product.name} à divisão`} title="Adicionar à divisão" onClick={() => addProduct(product)}><Plus size={17}/></button></div></article>)}{!products.length && <p className="planner-empty-catalog">Não encontrámos peças nesta categoria.</p>}</div>}
-        </> : panel === 'room' ? <div className="planner-room-form"><p>Define o espaço para veres a planta à escala. Podes escrever a medida ou usar os controlos.</p><label>Nome do projeto<input value={name} maxLength={80} onChange={event => setName(event.target.value)}/></label><div className="planner-measure-row">{[['width','Largura',widthInput,setWidthInput],['depth','Comprimento',depthInput,setDepthInput]].map(([axis,label,value,setValue]) => <div className="planner-measure-control" key={axis}><label htmlFor={`room-${axis}`}>{label}</label><div className="planner-measure-stepper"><button type="button" aria-label={`Diminuir ${label.toLowerCase()} em 10 centímetros`} onClick={() => adjustDimension(axis,-10)}><Minus size={15}/></button><input id={`room-${axis}`} type="number" inputMode="numeric" min="180" max="1200" step="10" value={value} onChange={event => setValue(event.target.value)} onBlur={event => commitDimension(axis,event.target.value)} onKeyDown={event => { if (event.key === 'Enter') event.currentTarget.blur(); }} aria-describedby={`room-${axis}-hint`}/><button type="button" aria-label={`Aumentar ${label.toLowerCase()} em 10 centímetros`} onClick={() => adjustDimension(axis,10)}><Plus size={15}/></button></div><small id={`room-${axis}-hint`}>cm · entre 180 e 1200</small></div>)}</div><label>Orçamento<input type="number" min="0" max="100000" step="50" value={budget} onChange={event => setBudget(Math.max(0, Math.min(100000, Number(event.target.value) || 0)))}/><small>€</small></label><div className="planner-room-total"><span>Valor das peças</span><b>{money(total)}</b><small>{total > Number(budget) * 100 ? 'Acima do orçamento' : `${money(Math.max(0, Number(budget) * 100 - total))} disponíveis`}</small></div><button className="planner-save-button wide" onClick={saveProject}><Save size={16}/>Guardar projeto</button></div> : null}
+          {loading ? <Loading label="A carregar o catálogo"/> : error ? <ErrorNotice message={error} retry={() => setRetryCatalog(value => value + 1)}/> : <div className="planner-catalog-grid">{products.map(product => <article className="planner-catalog-card" key={product.id}><button className="planner-card-photo" aria-label={`Ver ${product.name}`} onClick={() => onProduct(product)}><img src={product.image} alt={product.name} loading="lazy"/></button><div className="planner-card-details"><div><b>{product.name}</b><span>{product.width_cm && product.depth_cm ? `${product.width_cm} × ${product.depth_cm} cm` : product.material || product.category_name}</span></div><strong>{money(product.price_cents)}</strong><button aria-label={`Adicionar ${product.name} à divisão`} title="Adicionar à divisão" onClick={() => addProduct(product)}><Plus size={17}/></button></div></article>)}{!products.length && <p className="planner-empty-catalog">Não encontrámos peças nesta categoria.</p>}</div>}
+        </> : panel === 'room' ? <div className="planner-room-form"><p>Define o espaço para veres a planta à escala. Podes escrever a medida ou usar os controlos.</p><label>Nome do projeto<input value={name} maxLength={80} onChange={event => setName(event.target.value)}/></label><div className="planner-measure-row">{[['width','Largura',widthInput,setWidthInput],['depth','Comprimento',depthInput,setDepthInput]].map(([axis,label,value,setValue]) => <div className="planner-measure-control" key={axis}><label htmlFor={`room-${axis}`}>{label}</label><div className="planner-measure-stepper"><button type="button" aria-label={`Diminuir ${label.toLowerCase()} em 10 centímetros`} onClick={() => adjustDimension(axis,-10)}><Minus size={15}/></button><input id={`room-${axis}`} type="number" inputMode="numeric" min="180" max="1200" step="10" value={value} onChange={event => setValue(event.target.value)} onBlur={event => commitDimension(axis,event.target.value)} onKeyDown={event => { if (event.key === 'Enter') event.currentTarget.blur(); }} aria-describedby={`room-${axis}-hint`}/><button type="button" aria-label={`Aumentar ${label.toLowerCase()} em 10 centímetros`} onClick={() => adjustDimension(axis,10)}><Plus size={15}/></button></div><small id={`room-${axis}-hint`}>cm · entre 180 e 1200</small></div>)}</div><label>Orçamento<input type="number" min="0" max="100000" step="50" value={budget} onChange={event => setBudget(Math.max(0, Math.min(100000, Number(event.target.value) || 0)))}/><small>€</small></label><div className="planner-room-total"><span>Valor das peças</span><b>{money(total)}</b><small>{total > Number(budget) * 100 ? 'Acima do orçamento' : `${money(Math.max(0, Number(budget) * 100 - total))} disponíveis`}</small></div><div className="planner-floor-summary"><span>Área livre estimada</span><b>{Math.max(0, floorArea - occupiedArea).toFixed(1)} m²</b><small>{occupiedArea.toFixed(1)} m² ocupados · estimativa sem contar sobreposições</small></div><section className="planner-shopping-list" aria-label="Lista de compras do projeto"><div className="planner-shopping-heading"><b>Lista do projeto</b><span>{items.length} {items.length === 1 ? 'peça' : 'peças'}</span></div>{shoppingLines.map(line => <div className="planner-shopping-line" key={line.product.id}><button onClick={() => onProduct(line.product)}>{line.quantity} × {line.product.name}</button><span>{money(line.subtotal)}</span></div>)}<button className="planner-cart-project" disabled={!shoppingLines.length} onClick={addProjectToCart}><ShoppingBag size={16}/>Adicionar projeto ao carrinho</button></section><button className="planner-save-button wide" onClick={saveProject}><Save size={16}/>Guardar projeto agora</button></div> : null}
       </aside>
 
-      {selected && <div className="planner-selection-card"><img src={selected.product.image} alt=""/><div><b>{selected.product.name}</b><span>{dimensions(selected.product).width} × {dimensions(selected.product).depth} cm · {money(selected.product.price_cents)}</span>{selected.item.supportUid && <span className="planner-stack-context">Sobre {catalog.find(product => Number(product.id) === Number(items.find(item => item.uid === selected.item.supportUid)?.productId))?.name || 'outra peça'}</span>}</div>{selected.item.supportUid && <button title="Selecionar o móvel de suporte" aria-label={`Selecionar suporte de ${selected.product.name}`} onClick={() => setSelectedId(selected.item.supportUid)}><Layers size={17}/></button>}<button title="Rodar 90°" aria-label={`Rodar ${selected.product.name}`} onClick={() => rotateProduct(selected.item.uid)}><RotateCw size={17}/></button><button title="Eliminar da divisão" aria-label={`Eliminar ${selected.product.name} da divisão`} onClick={() => removeProduct(selected.item.uid)}><Trash2 size={17}/></button></div>}
+      {selected && <div className="planner-selection-card"><img src={selected.product.image} alt=""/><div className="planner-selection-main"><b>{selected.product.name}</b><span>{dimensions(selected.product).width} × {dimensions(selected.product).depth} cm · {money(selected.product.price_cents)}</span>{selected.item.supportUid && <span className="planner-stack-context">Sobre {catalog.find(product => Number(product.id) === Number(items.find(item => item.uid === selected.item.supportUid)?.productId))?.name || 'outra peça'}</span>}</div><button title="Ver produto" aria-label={`Ver produto ${selected.product.name}`} onClick={() => onProduct(selected.product)}><ExternalLink size={16}/></button>{selected.item.supportUid && <button title="Selecionar o móvel de suporte" aria-label={`Selecionar suporte de ${selected.product.name}`} onClick={() => setSelectedId(selected.item.supportUid)}><Layers size={17}/></button>}<button title="Rodar 90°" aria-label={`Rodar ${selected.product.name}`} onClick={() => rotateProduct(selected.item.uid)}><RotateCw size={17}/></button><button title="Eliminar da divisão" aria-label={`Eliminar ${selected.product.name} da divisão`} onClick={() => removeProduct(selected.item.uid)}><Trash2 size={17}/></button>{wallClearance && <div className="planner-clearance-grid" aria-label="Distância às paredes"><span>Esquerda <b>{wallClearance.esquerda} cm</b></span><span>Direita <b>{wallClearance.direita} cm</b></span><span>Janela <b>{wallClearance.janela} cm</b></span><span>Oposta <b>{wallClearance.oposta} cm</b></span></div>}{overlappingItems.length > 0 && <div className="planner-overlap-picker"><span>Peças sobrepostas</span>{overlappingItems.map(item => { const product = catalog.find(row => Number(row.id) === Number(item.productId)); return <button key={item.uid} onClick={() => setSelectedId(item.uid)}>{product?.name || 'Peça'}<Layers size={13}/></button>; })}</div>}</div>}
 
       <div className="planner-zoom-controls"><button aria-label="Reduzir zoom" onClick={() => setZoom(value => Math.max(.65, Math.round((value - .1) * 100) / 100))}><Minus size={16}/></button><span>{Math.round(zoom * 100)}%</span><button aria-label="Aumentar zoom" onClick={() => setZoom(value => Math.min(1.8, Math.round((value + .1) * 100) / 100))}><Plus size={16}/></button></div>
       <div className="planner-stage-status"><span><Move3D size={15}/>{mode === '2d' ? 'Arrasta sobre uma mesa para empilhar' : 'Arrasta para mover'}</span><span><RotateCw size={14}/>R para rodar</span><span className="planner-stage-count">{items.length} {items.length === 1 ? 'peça' : 'peças'} · {money(total)}</span></div>
